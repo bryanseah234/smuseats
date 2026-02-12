@@ -14,6 +14,7 @@ export interface RoomConfig {
   id: string;
   name?: string;
   imageUrl?: string;
+  assetType?: 'image' | 'pdf';
   width: number;
   height: number;
   seats: SeatModel[];
@@ -171,12 +172,21 @@ export function RoomCanvas({
           }}
         >
           {room.imageUrl ? (
-            <img
-              src={room.imageUrl}
-              alt={room.name ?? room.id}
-              draggable={false}
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
-            />
+            room.assetType === 'pdf' ? (
+              <object
+                data={room.imageUrl}
+                type="application/pdf"
+                aria-label={room.name ?? room.id}
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
+              />
+            ) : (
+              <img
+                src={room.imageUrl}
+                alt={room.name ?? room.id}
+                draggable={false}
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+              />
+            )
           ) : (
             <div
               aria-hidden
