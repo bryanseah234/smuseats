@@ -4,19 +4,21 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { RoomCanvas, type RoomConfig, type ViewportState } from '../components/viewer/RoomCanvas';
 import { type SeatModel } from '../components/viewer/Seat';
 import registry from '../data/registry.json';
+import { pdfRooms } from '../data/pdfRooms';
 
 type RegistryRoom = (typeof registry.rooms)[number];
+type RuntimeRoom = RegistryRoom | (typeof pdfRooms)[number];
+
+const runtimeRooms: RuntimeRoom[] = pdfRooms.length > 0 ? pdfRooms : registry.rooms;
 
 const toNumber = (value: string | null, fallback: number) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-const createSeatGrid = (room: RegistryRoom): SeatModel[] => {
-  const columns = Math.max(2, Math.min(8, Math.floor(room.layout.width / 3)));
-  const rows = Math.max(2, Math.min(5, Math.floor(room.layout.height / 2.5)));
-  const xGap = room.layout.width / (columns + 1);
-  const yGap = room.layout.height / (rows + 1);
+const createSeatGrid = (room: RuntimeRoom): SeatModel[] => {
+  const columns = Math.max(2, Math.min(8, Math.floor(room.layout.width / 130)));
+  const rows = Math.max(2, Math.min(6, Math.floor(room.layout.height / 130)));
 
   return Array.from({ length: columns * rows }, (_, index) => {
     const row = Math.floor(index / columns);
@@ -25,16 +27,18 @@ const createSeatGrid = (room: RegistryRoom): SeatModel[] => {
     return {
       id: `${room.id}-${index + 1}`,
       label: `Seat ${index + 1}`,
-      x: Number(((col + 1) * xGap).toFixed(2)),
-      y: Number(((row + 1) * yGap).toFixed(2)),
+      x: Number((((col + 1) / (columns + 1)) * 100).toFixed(2)),
+      y: Number((((row + 1) / (rows + 1)) * 100).toFixed(2)),
       status: 'available' as const,
     };
   });
 };
 
-const toRoomConfig = (room: RegistryRoom): RoomConfig => ({
+const toRoomConfig = (room: RuntimeRoom): RoomConfig => ({
   id: room.id,
   name: room.name,
+  imageUrl: 'imageUrl' in room ? room.imageUrl : undefined,
+  assetType: 'imageUrl' in room ? 'pdf' : undefined,
   width: room.layout.width,
   height: room.layout.height,
   seats: createSeatGrid(room),
@@ -45,7 +49,7 @@ const RoomView = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const room = useMemo(() => {
-    const registryRoom = registry.rooms.find((entry) => entry.id === roomId);
+    const registryRoom = runtimeRooms.find((entry) => entry.id === roomId);
     return registryRoom ? toRoomConfig(registryRoom) : null;
   }, [roomId]);
 
