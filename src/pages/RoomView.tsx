@@ -12,7 +12,7 @@ const getRoomConfig = (roomId?: string): RoomConfig | null => {
 };
 
 const RoomView = () => {
-  const { roomId } = useParams<{ roomId: string }>();
+  const { roomId } = useParams<'roomId'>();
   const room = getRoomConfig(roomId);
 
   if (!room) {
