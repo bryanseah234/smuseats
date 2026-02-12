@@ -92,6 +92,8 @@ const ImageUploader = ({ onUpload }: ImageUploaderProps) => {
           void processFile(event.currentTarget.files?.[0] ?? null);
           event.currentTarget.value = '';
         }}
+        className="sr-only"
+        onChange={(event) => void processFile(event.target.files?.[0] ?? null)}
       />
       <div
         role="button"

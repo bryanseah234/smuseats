@@ -1,5 +1,5 @@
 import { type MouseEvent, type RefObject, useEffect, useMemo, useRef, useState } from 'react';
-import ImageUploader, { FloorplanAsset } from './ImageUploader';
+import ImageUploader, { type FloorplanAsset } from './ImageUploader';
 
 type Seat = {
   id: number;
