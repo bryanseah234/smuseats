@@ -1,1 +1,1 @@
-# smuseats
+# SMU Seats
