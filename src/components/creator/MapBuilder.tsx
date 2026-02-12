@@ -141,7 +141,18 @@ const MapBuilder = () => {
             style={{ marginLeft: 6, width: 80 }}
           />
         </label>
-        <button type="button" onClick={() => setSeats((existing) => existing.slice(0, -1))}>
+        <button
+          type="button"
+          onClick={() =>
+            setSeats((existing) => {
+              const updated = existing.slice(0, -1);
+              const newNextId =
+                updated.length > 0 ? updated[updated.length - 1].id + 1 : startId;
+              setNextId(newNextId);
+              return updated;
+            })
+          }
+        >
           Undo (Ctrl/Cmd+Z)
         </button>
         <button type="button" onClick={resetAll}>
