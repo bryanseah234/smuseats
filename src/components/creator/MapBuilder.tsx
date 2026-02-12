@@ -220,7 +220,11 @@ const RoomCanvas = ({ asset, seats, ghostSeat, canvasRef, onMove, onLeave, onCli
           asset.mimeType === 'image/png' ? (
             <img src={asset.dataUrl} alt={asset.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           ) : (
-            <object data={asset.dataUrl} type="application/pdf" style={{ width: '100%', height: '100%' }}>
+            <object
+              data={asset.dataUrl}
+              type="application/pdf"
+              style={{ width: '100%', height: '100%', pointerEvents: 'none' }}
+            >
               <div style={{ padding: 16 }}>PDF preview unavailable in this browser.</div>
             </object>
           )
