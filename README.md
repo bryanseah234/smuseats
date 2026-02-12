@@ -1,4 +1,4 @@
-# smuseats
+# SMU Seats
 
 ## Merge multiple PRs into `main` (preserve commits)
 
