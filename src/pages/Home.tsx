@@ -1,7 +1,38 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import registry from '../data/registry.json';
+
+type Room = {
+  id: string | number;
+  name: string;
+  description: string;
+};
+
+type Registry = {
+  rooms: Room[];
+};
 
 const Home = () => {
+  const [registry, setRegistry] = useState<Registry | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadRegistry = async () => {
+      try {
+        const response = await fetch('/data/registry.json');
+        if (!response.ok) {
+          throw new Error(`Failed to load registry: ${response.status} ${response.statusText}`);
+        }
+        const data = (await response.json()) as Registry;
+        setRegistry(data);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to load rooms.');
+      }
+    };
+
+    loadRegistry();
+  }, []);
+
   return (
     <main>
       <h1>Smuseats</h1>
