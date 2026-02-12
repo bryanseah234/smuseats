@@ -1,25 +1,53 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useMemo } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 
 import { RoomCanvas, type RoomConfig, type ViewportState } from '../components/viewer/RoomCanvas';
 import { type SeatModel } from '../components/viewer/Seat';
+import registry from '../data/registry.json';
+
+type RegistryRoom = (typeof registry.rooms)[number];
 
 const toNumber = (value: string | null, fallback: number) => {
-  if (value === null || value.trim() === '') {
-    return fallback;
-  }
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-export function RoomView() {
+const createSeatGrid = (room: RegistryRoom): SeatModel[] => {
+  const columns = Math.max(2, Math.min(8, Math.floor(room.layout.width / 3)));
+  const rows = Math.max(2, Math.min(5, Math.floor(room.layout.height / 2.5)));
+  const xGap = room.layout.width / (columns + 1);
+  const yGap = room.layout.height / (rows + 1);
+
+  return Array.from({ length: columns * rows }, (_, index) => {
+    const row = Math.floor(index / columns);
+    const col = index % columns;
+
+    return {
+      id: `${room.id}-${index + 1}`,
+      label: `Seat ${index + 1}`,
+      x: Number(((col + 1) * xGap).toFixed(2)),
+      y: Number(((row + 1) * yGap).toFixed(2)),
+      status: 'available' as const,
+    };
+  });
+};
+
+const toRoomConfig = (room: RegistryRoom): RoomConfig => ({
+  id: room.id,
+  name: room.name,
+  width: room.layout.width,
+  height: room.layout.height,
+  seats: createSeatGrid(room),
+});
+
 const RoomView = () => {
-  const { roomId = 'default' } = useParams();
+  const { roomId } = useParams<{ roomId: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [room, setRoom] = useState<RoomConfig | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const room = useMemo(() => {
+    const registryRoom = registry.rooms.find((entry) => entry.id === roomId);
+    return registryRoom ? toRoomConfig(registryRoom) : null;
+  }, [roomId]);
 
   const selectedSeatId = searchParams.get('seat') ?? undefined;
 
@@ -31,46 +59,6 @@ const RoomView = () => {
     }),
     [searchParams],
   );
-
-  useEffect(() => {
-    let active = true;
-
-    async function loadRoom() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const encodedRoomId = encodeURIComponent(roomId);
-        const response = await fetch(`/rooms/${encodedRoomId}.json`);
-        const response = await fetch(`/rooms/${roomId}.json`);
-        if (!response.ok) {
-          throw new Error(`Could not load room ${roomId}`);
-        }
-
-        const payload = (await response.json()) as RoomConfig;
-        if (!active) {
-          return;
-        }
-
-        setRoom(payload);
-      } catch (fetchError) {
-        if (!active) {
-          return;
-        }
-        setError(fetchError instanceof Error ? fetchError.message : 'Failed to load room.');
-      } finally {
-        if (active) {
-          setLoading(false);
-        }
-      }
-    }
-
-    loadRoom();
-
-    return () => {
-      active = false;
-    };
-  }, [roomId]);
 
   const updateSearchParams = (changes: Record<string, string | null | undefined>) => {
     const next = new URLSearchParams(searchParams);
@@ -98,18 +86,21 @@ const RoomView = () => {
     });
   };
 
-  if (loading) {
-    return <div>Loading room...</div>;
-  }
-
-  if (error || !room) {
-    return <div role="alert">{error ?? 'Room is unavailable.'}</div>;
+  if (!room) {
+    return (
+      <main style={{ padding: 24 }}>
+        <h1>Room not found</h1>
+        <p>We could not find room: {roomId}</p>
+        <Link to="/">Back home</Link>
+      </main>
+    );
   }
 
   return (
-    <section className="room-view-page">
+    <section className="room-view-page" style={{ display: 'grid', gap: 12, padding: 24 }}>
       <header>
-        <h1>{room.name ?? `Room ${room.id}`}</h1>
+        <h1 style={{ marginBottom: 4 }}>{room.name ?? `Room ${room.id}`}</h1>
+        <p style={{ margin: 0, color: '#4b5563' }}>Click a seat to select it. Scroll to zoom and drag to pan.</p>
       </header>
 
       <RoomCanvas
@@ -119,9 +110,13 @@ const RoomView = () => {
         viewportState={viewportState}
         onViewportStateChange={handleViewportChange}
       />
+
+      <footer style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span>Selected seat: {selectedSeatId ?? 'none'}</span>
+        <Link to="/">Back home</Link>
+      </footer>
     </section>
   );
-}
 };
 
 export default RoomView;

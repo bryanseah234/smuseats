@@ -13,7 +13,7 @@ import { Seat, type SeatModel } from './Seat';
 export interface RoomConfig {
   id: string;
   name?: string;
-  imageUrl: string;
+  imageUrl?: string;
   width: number;
   height: number;
   seats: SeatModel[];
@@ -170,12 +170,24 @@ export function RoomCanvas({
             transformOrigin: 'top left',
           }}
         >
-          <img
-            src={room.imageUrl}
-            alt={room.name ?? room.id}
-            draggable={false}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
-          />
+          {room.imageUrl ? (
+            <img
+              src={room.imageUrl}
+              alt={room.name ?? room.id}
+              draggable={false}
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+            />
+          ) : (
+            <div
+              aria-hidden
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background:
+                  'repeating-linear-gradient(0deg, #f8fafc, #f8fafc 24px, #e2e8f0 24px, #e2e8f0 25px), repeating-linear-gradient(90deg, #f8fafc, #f8fafc 24px, #e2e8f0 24px, #e2e8f0 25px)',
+              }}
+            />
+          )}
 
           <div className="room-canvas-seat-layer" style={{ position: 'absolute', inset: 0 }}>
             {room.seats.map((seat) => (

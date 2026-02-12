@@ -141,19 +141,8 @@ const MapBuilder = () => {
             style={{ marginLeft: 6, width: 80 }}
           />
         </label>
-        <button
-          type="button"
-          onClick={() =>
-            setSeats((existing) => {
-              const updated = existing.slice(0, -1);
-              const newNextId =
-                updated.length > 0 ? updated[updated.length - 1].id + 1 : startId;
-              setNextId(newNextId);
-              return updated;
-            })
-          }
-        >
-          Undo (Ctrl/Cmd+Z)
+        <button type="button" onClick={() => setSeats((existing) => existing.slice(0, -1))}>
+          Undo (Ctrl+Z)
         </button>
         <button type="button" onClick={resetAll}>
           Reset
@@ -202,7 +191,7 @@ type RoomCanvasProps = {
   asset: FloorplanAsset | null;
   seats: Seat[];
   ghostSeat: GhostSeat | null;
-  canvasRef: RefObject<HTMLDivElement>;
+  canvasRef: RefObject<HTMLDivElement | null>;
   onMove: (event: MouseEvent<HTMLDivElement>) => void;
   onLeave: () => void;
   onClick: (event: MouseEvent<HTMLDivElement>) => void;
@@ -211,7 +200,7 @@ type RoomCanvasProps = {
 const RoomCanvas = ({ asset, seats, ghostSeat, canvasRef, onMove, onLeave, onClick }: RoomCanvasProps) => {
   return (
     <section>
-      <h3 style={{ marginBottom: 8 }}>Floorplan</h3>
+      <h3 style={{ marginBottom: 8 }}>RoomCanvas</h3>
       <div
         ref={canvasRef}
         onMouseMove={onMove}
@@ -231,11 +220,7 @@ const RoomCanvas = ({ asset, seats, ghostSeat, canvasRef, onMove, onLeave, onCli
           asset.mimeType === 'image/png' ? (
             <img src={asset.dataUrl} alt={asset.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           ) : (
-            <object
-              data={asset.dataUrl}
-              type="application/pdf"
-              style={{ width: '100%', height: '100%', pointerEvents: 'none' }}
-            >
+            <object data={asset.dataUrl} type="application/pdf" style={{ width: '100%', height: '100%' }}>
               <div style={{ padding: 16 }}>PDF preview unavailable in this browser.</div>
             </object>
           )
