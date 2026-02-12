@@ -133,9 +133,15 @@ export const useUrlState = (): UseUrlStateResult => {
   );
 
   const clearState = useCallback(() => {
-    updateState(() => DEFAULT_SESSION_STATE);
-  }, [updateState]);
+    // Reset local session state and remove URL-backed state parameter.
+    setState(DEFAULT_SESSION_STATE);
 
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.delete(QUERY_PARAM_KEY);
+      window.history.replaceState(null, '', url.toString());
+    }
+  }, [setState]);
   return useMemo(
     () => ({
       state,
