@@ -97,9 +97,28 @@ npm run lint
 npm run build
 ```
 
+
+## Operational health checklist
+
+Use this quick check before each deploy:
+
+```bash
+npm ci
+npm run lint
+npm run build
+npm run preview -- --host 0.0.0.0 --port 4174
+```
+
+Then verify:
+- `/` returns 200
+- `/room/lobby` returns 200 (SPA fallback)
+- `/assets/...js` returns 200 (static file is **not** rewritten to HTML)
+
+---
+
 ## Deploying to Vercel
 
-This repo is configured as a Vite SPA and includes `vercel.json` rewrite rules so client-side routes (`/room/:roomId`, `/create`) resolve to `index.html` on direct refresh.
+This repo is configured as a Vite SPA and includes a filesystem-aware fallback in `vercel.json` so static assets are served normally while client-side routes (`/room/:roomId`, `/create`) still resolve to `index.html` on direct refresh.
 
 ### Vercel project settings
 - Framework preset: **Vite**
