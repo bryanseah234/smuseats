@@ -5,10 +5,14 @@ import { RoomCanvas, type RoomConfig, type ViewportState } from '../components/v
 import { type SeatModel } from '../components/viewer/Seat';
 
 const toNumber = (value: string | null, fallback: number) => {
+  if (value === null || value.trim() === '') {
+    return fallback;
+  }
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+export function RoomView() {
 const RoomView = () => {
   const { roomId = 'default' } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -36,6 +40,8 @@ const RoomView = () => {
         setLoading(true);
         setError(null);
 
+        const encodedRoomId = encodeURIComponent(roomId);
+        const response = await fetch(`/rooms/${encodedRoomId}.json`);
         const response = await fetch(`/rooms/${roomId}.json`);
         if (!response.ok) {
           throw new Error(`Could not load room ${roomId}`);
@@ -115,6 +121,7 @@ const RoomView = () => {
       />
     </section>
   );
+}
 };
 
 export default RoomView;
