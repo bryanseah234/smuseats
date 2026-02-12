@@ -11,7 +11,7 @@ const Home = () => {
           <li key={room.id}>
             <h2>{room.name}</h2>
             <p>{room.description}</p>
-            <Link to={`/room/${room.id}`}>Open room</Link>
+            <Link to={`/room/${room.id}`}>{`Open ${room.name}`}</Link>
           </li>
         ))}
       </ul>
