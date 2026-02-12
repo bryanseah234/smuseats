@@ -5,6 +5,9 @@ import { RoomCanvas, type RoomConfig, type ViewportState } from '../components/v
 import { type SeatModel } from '../components/viewer/Seat';
 
 const toNumber = (value: string | null, fallback: number) => {
+  if (value === null || value.trim() === '') {
+    return fallback;
+  }
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
 };
