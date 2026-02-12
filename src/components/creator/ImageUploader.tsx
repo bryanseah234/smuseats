@@ -78,7 +78,10 @@ const ImageUploader = ({ onUpload }: ImageUploaderProps) => {
         type="file"
         accept="image/png,application/pdf"
         className="sr-only"
-        onChange={(event) => void processFile(event.target.files?.[0] ?? null)}
+        onChange={(event) => {
+          void processFile(event.currentTarget.files?.[0] ?? null);
+          event.currentTarget.value = '';
+        }}
       />
       <div
         role="button"
