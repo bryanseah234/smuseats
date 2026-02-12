@@ -39,7 +39,8 @@ export function RoomView() {
         setLoading(true);
         setError(null);
 
-        const response = await fetch(`/rooms/${roomId}.json`);
+        const encodedRoomId = encodeURIComponent(roomId);
+        const response = await fetch(`/rooms/${encodedRoomId}.json`);
         if (!response.ok) {
           throw new Error(`Could not load room ${roomId}`);
         }
