@@ -142,7 +142,7 @@ const MapBuilder = () => {
           />
         </label>
         <button type="button" onClick={() => setSeats((existing) => existing.slice(0, -1))}>
-          Undo (Ctrl+Z)
+          Undo (Ctrl/Cmd+Z)
         </button>
         <button type="button" onClick={resetAll}>
           Reset
