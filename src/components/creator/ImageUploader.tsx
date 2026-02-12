@@ -77,6 +77,21 @@ const ImageUploader = ({ onUpload }: ImageUploaderProps) => {
         ref={inputRef}
         type="file"
         accept="image/png,application/pdf"
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          padding: 0,
+          margin: -1,
+          overflow: 'hidden',
+          clip: 'rect(0, 0, 0, 0)',
+          whiteSpace: 'nowrap',
+          border: 0,
+        }}
+        onChange={(event) => {
+          void processFile(event.currentTarget.files?.[0] ?? null);
+          event.currentTarget.value = '';
+        }}
         className="sr-only"
         onChange={(event) => void processFile(event.target.files?.[0] ?? null)}
       />
