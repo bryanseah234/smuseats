@@ -37,9 +37,9 @@ A Vite + React + TypeScript frontend for **room seat viewing** and **seat-map cr
 ```mermaid
 flowchart TD
   A[BrowserRouter in main.tsx] --> B[App Routes]
-  B --> C[/ Home]
-  B --> D[/room/:roomId]
-  B --> E[/create]
+  B --> C["/ Home"]
+  B --> D["/room/:roomId"]
+  B --> E["/create"]
 
   C --> F[registry.json]
   D --> F
