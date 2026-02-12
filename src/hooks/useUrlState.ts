@@ -79,7 +79,7 @@ const writeSessionToUrl = (state: SessionState): void => {
   params.set(QUERY_PARAM_KEY, encodeSessionState(state));
   const query = params.toString();
   const nextUrl = `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`;
-  window.history.replaceState(null, '', nextUrl);
+  window.history.replaceState(window.history.state, '', nextUrl);
 };
 
 export interface UseUrlStateResult {
