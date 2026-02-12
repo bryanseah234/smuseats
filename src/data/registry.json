@@ -1,0 +1,24 @@
+{
+  "rooms": [
+    {
+      "id": "lobby",
+      "name": "Main Lobby",
+      "description": "Welcome area with orientation map and quick links.",
+      "layout": {
+        "width": 20,
+        "height": 10,
+        "spawn": [2, 2]
+      }
+    },
+    {
+      "id": "cafe",
+      "name": "Campus Cafe",
+      "description": "A social room for players to meet and chat.",
+      "layout": {
+        "width": 28,
+        "height": 14,
+        "spawn": [3, 5]
+      }
+    }
+  ]
+}
