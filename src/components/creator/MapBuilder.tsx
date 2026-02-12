@@ -200,7 +200,7 @@ type RoomCanvasProps = {
 const RoomCanvas = ({ asset, seats, ghostSeat, canvasRef, onMove, onLeave, onClick }: RoomCanvasProps) => {
   return (
     <section>
-      <h3 style={{ marginBottom: 8 }}>RoomCanvas</h3>
+      <h3 style={{ marginBottom: 8 }}>Floorplan</h3>
       <div
         ref={canvasRef}
         onMouseMove={onMove}
