@@ -37,21 +37,15 @@ const Home = () => {
     <main>
       <h1>Smuseats</h1>
       <p>Select a room to enter.</p>
-      {error && <p>{error}</p>}
-      {!error && !registry && <p>Loading rooms...</p>}
-      {registry && (
-        <>
-          <ul>
-            {registry.rooms.map((room) => (
-              <li key={room.id}>
-                <h2>{room.name}</h2>
-                <p>{room.description}</p>
-                <Link to={`/room/${room.id}`}>Open room</Link>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
+      <ul>
+        {registry.rooms.map((room) => (
+          <li key={room.id}>
+            <h2>{room.name}</h2>
+            <p>{room.description}</p>
+            <Link to={`/room/${room.id}`}>Open room</Link>
+          </li>
+        ))}
+      </ul>
       <Link to="/create">Create a new map</Link>
     </main>
   );
