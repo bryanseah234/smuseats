@@ -13,6 +13,7 @@ const toNumber = (value: string | null, fallback: number) => {
 };
 
 export function RoomView() {
+const RoomView = () => {
   const { roomId = 'default' } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -41,6 +42,7 @@ export function RoomView() {
 
         const encodedRoomId = encodeURIComponent(roomId);
         const response = await fetch(`/rooms/${encodedRoomId}.json`);
+        const response = await fetch(`/rooms/${roomId}.json`);
         if (!response.ok) {
           throw new Error(`Could not load room ${roomId}`);
         }
@@ -120,3 +122,6 @@ export function RoomView() {
     </section>
   );
 }
+};
+
+export default RoomView;
