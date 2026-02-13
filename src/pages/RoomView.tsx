@@ -17,10 +17,10 @@ const clamp = (value: number, min: number, max: number) => Math.min(Math.max(val
 
 type RegistryRoom = (typeof registry.rooms)[number];
 
-/** Derive a clean display name from the image path, e.g. "/maps/LKCSB Seminar Room 1-1.png" → "LKCSB Seminar Room 1-1" */
+/** Derive a clean display name from the image path, e.g. "/maps-masked/LKCSB Seminar Room 1-1.png" → "LKCSB Seminar Room 1-1" */
 const displayName = (room: RegistryRoom): string => {
   if (room.image) {
-    const file = room.image.replace(/^\/maps\//, '').replace(/\.png$/i, '');
+    const file = room.image.replace(/^\/maps(?:-masked)?\//, '').replace(/\.png$/i, '');
     if (file) return file;
   }
   return room.name ?? room.id;
@@ -156,16 +156,13 @@ const RoomView = () => {
           <p>Click seats to mark them. Click +/− to zoom.</p>
         </div>
 
-        <div className="room-view-right-zoom">
+        <div className="room-view-right-toolbar">
           <div className="zoom-controls">
             <button type="button" onClick={zoomOut} title="Zoom out">−</button>
             <span>{Math.round(viewport.zoom * 100)}%</span>
             <button type="button" onClick={zoomIn} title="Zoom in">+</button>
             <button type="button" onClick={zoomReset} title="Reset view">Reset</button>
           </div>
-        </div>
-
-        <div className="room-view-right-actions">
           <button type="button" className="btn btn--primary" onClick={handleCopyLink}>
             {copied ? '✓ Copied!' : '🔗 Copy URL'}
           </button>
