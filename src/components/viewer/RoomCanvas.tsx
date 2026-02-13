@@ -142,7 +142,15 @@ export function RoomCanvas({
                 src={room.imageUrl}
                 alt={room.name ?? room.id}
                 draggable={false}
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  userSelect: 'none',
+                  pointerEvents: 'none',
+                }}
               />
             ) : (
               <div

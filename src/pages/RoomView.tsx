@@ -125,9 +125,6 @@ const RoomView = () => {
     }));
   }, [state.d]);
 
-  const selectedSeatValue = selectedSeatId ? state.d[selectedSeatId] : undefined;
-  const selectedSeatName = typeof selectedSeatValue === 'string' ? selectedSeatValue : '';
-
   if (!room) {
     return (
       <main style={{ padding: 24 }}>
@@ -156,19 +153,10 @@ const RoomView = () => {
         <div className="room-view-right-header">
           <Link to="/rooms" className="back-link">← Back to rooms</Link>
           <h1>{room.name ?? `Room ${room.id}`}</h1>
-          <p>Click seats to mark them. Drag to pan, use +/− to zoom.</p>
+          <p>Click seats to mark them. Click +/− to zoom.</p>
         </div>
 
-        <div className="room-view-right-actions">
-          <button type="button" className="btn btn--primary" onClick={handleCopyLink}>
-            {copied ? '✓ Copied!' : '🔗 Copy URL'}
-          </button>
-          {reservedEntries.length > 0 && (
-            <button type="button" className="btn btn--danger" onClick={handleClearAll}>
-              Clear all
-            </button>
-          )}
-
+        <div className="room-view-right-zoom">
           <div className="zoom-controls">
             <button type="button" onClick={zoomOut} title="Zoom out">−</button>
             <span>{Math.round(viewport.zoom * 100)}%</span>
@@ -177,46 +165,19 @@ const RoomView = () => {
           </div>
         </div>
 
-        {selectedSeatId && (
-          <div className="selection-panel">
-            <div className="selection-panel__label">Seat {selectedSeatId}</div>
-            <input
-              className="selection-panel__input"
-              value={selectedSeatName}
-              placeholder="Add student name…"
-              onChange={(event) => {
-                const value = event.target.value.trim();
-                if (!selectedSeatId) return;
-                setSeatValue(selectedSeatId, value.length > 0 ? value : 1);
-              }}
-            />
-            <div className="selection-panel__actions">
-              <button
-                type="button"
-                className="btn"
-                onClick={() => {
-                  if (!selectedSeatId) return;
-                  const currentValue = state.d[selectedSeatId];
-                  setSeatValue(selectedSeatId, currentValue ? undefined : 1);
-                }}
-              >
-                {selectedSeatValue ? 'Clear seat' : 'Mark taken'}
-              </button>
-              <button
-                type="button"
-                className="btn"
-                onClick={() => {
-                  if (selectedSeatId) {
-                    setSeatValue(selectedSeatId, undefined);
-                    setSelectedSeatId(undefined);
-                  }
-                }}
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-        )}
+        <div className="room-view-right-actions">
+          <button type="button" className="btn btn--primary" onClick={handleCopyLink}>
+            {copied ? '✓ Copied!' : '🔗 Copy URL'}
+          </button>
+          <button
+            type="button"
+            className="btn btn--danger"
+            onClick={handleClearAll}
+            disabled={reservedEntries.length === 0}
+          >
+            Clear all
+          </button>
+        </div>
 
         <div className="reserved-list">
           <div className="reserved-list__header">Reserved ({reservedEntries.length})</div>
@@ -234,7 +195,16 @@ const RoomView = () => {
               >
                 <span className="reserved-list__dot" />
                 <span className="reserved-list__seat-id">#{seatId}</span>
-                <span className="reserved-list__seat-name">{name ?? 'Taken'}</span>
+                <input
+                  className="reserved-list__name-input"
+                  value={name ?? ''}
+                  placeholder="Add name…"
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setSeatValue(seatId, v.length > 0 ? v : 1);
+                  }}
+                />
                 <button
                   type="button"
                   className="reserved-list__remove"
@@ -254,7 +224,6 @@ const RoomView = () => {
 
         <div className="room-view-footer">
           <span>State is saved in the URL</span>
-          <Link to="/">← Home</Link>
         </div>
       </div>
     </div>
