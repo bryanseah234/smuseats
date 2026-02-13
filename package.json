@@ -10,10 +10,13 @@
     "preview": "vite preview",
     "extract:pdf": "node scripts/extract-pdf-png.mjs",
     "seed:seats": "node scripts/seed-seats.mjs",
-    "gen:favicon": "node scripts/generate-favicon.mjs"
+    "gen:favicon": "node scripts/generate-favicon.mjs",
+    "convert:coords": "node scripts/convert-coords-to-pixels.mjs",
+    "detect:seats": "node scripts/detect-seats.mjs"
   },
   "dependencies": {
     "lz-string": "^1.5.0",
+    "mupdf": "^1.27.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.9.4"
@@ -29,6 +32,7 @@
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.24",
+    "pdf-to-png-converter": "^3.11.0",
     "pdfjs-dist": "^4.10.38",
     "png-to-ico": "^3.0.1",
     "postcss": "^8.5.6",
