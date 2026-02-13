@@ -28,7 +28,7 @@ function SeatComponent({ seat, selected = false, onSelect }: SeatProps) {
   }, [onSelect, seat]);
 
   const handleKeyDown = useCallback(
-    (event: KeyboardEvent<HTMLButtonElement>) => {
+    (event: KeyboardEvent<SVGGElement>) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
         onSelect?.(seat);
@@ -40,26 +40,19 @@ function SeatComponent({ seat, selected = false, onSelect }: SeatProps) {
   const statusClass = STATUS_CLASS[seat.status ?? 'available'];
 
   return (
-    <button
-      type="button"
+    <g
       className={`seat ${statusClass} ${selected ? 'seat--selected' : ''}`.trim()}
-      style={{
-        position: 'absolute',
-        left: `${seat.x}%`,
-        top: `${seat.y}%`,
-        transform: 'translate(-50%, -50%)',
-        zIndex: selected ? 3 : 2,
-      }}
+      role="button"
+      tabIndex={0}
       aria-pressed={selected}
       aria-label={seat.label ?? `Seat ${seat.id}`}
-      title={seat.label ?? seat.id}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       data-seat-id={seat.id}
     >
-      <span className="seat__dot" aria-hidden="true" />
-      {seat.label ? <span className="seat__label">{seat.label}</span> : null}
-    </button>
+      <title>{seat.label ?? seat.id}</title>
+      <circle className="seat__dot" cx={seat.x} cy={seat.y} r={1.2} />
+    </g>
   );
 }
 
