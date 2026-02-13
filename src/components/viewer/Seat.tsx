@@ -51,7 +51,7 @@ function SeatComponent({ seat, selected = false, onSelect }: SeatProps) {
       data-seat-id={seat.id}
     >
       <title>{seat.label ?? seat.id}</title>
-      <circle className="seat__dot" cx={seat.x} cy={seat.y} r={9} />
+      <circle className="seat__dot" cx={seat.x} cy={seat.y} r={18} />
     </g>
   );
 }

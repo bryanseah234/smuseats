@@ -5,7 +5,6 @@ import {
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
-  type WheelEvent,
 } from 'react';
 
 import { Seat, type SeatModel } from './Seat';
@@ -31,15 +30,7 @@ interface RoomCanvasProps {
   onSeatSelect?: (seat: SeatModel) => void;
   viewportState?: ViewportState;
   onViewportStateChange?: (state: ViewportState) => void;
-  editMode?: boolean;
-  onSeatAdd?: (x: number, y: number) => void;
 }
-
-const MIN_ZOOM = 1;
-const MAX_ZOOM = 4;
-const ZOOM_STEP = 0.1;
-
-const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
 export function RoomCanvas({
   room,
@@ -47,13 +38,10 @@ export function RoomCanvas({
   onSeatSelect,
   viewportState,
   onViewportStateChange,
-  editMode = false,
-  onSeatAdd,
 }: RoomCanvasProps) {
   const [localViewport, setLocalViewport] = useState<ViewportState>({ zoom: 1, panX: 0, panY: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dragOriginRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
-  const svgRef = useRef<SVGSVGElement>(null);
 
   const viewport = viewportState ?? localViewport;
 
@@ -110,41 +98,9 @@ export function RoomCanvas({
     if (event && event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
-
-    // In edit mode, if pointer barely moved, treat as a click → add a seat
-    if (editMode && onSeatAdd && dragOriginRef.current && event) {
-      const dx = event.clientX - dragOriginRef.current.x;
-      const dy = event.clientY - dragOriginRef.current.y;
-      if (Math.abs(dx) < 5 && Math.abs(dy) < 5) {
-        const svg = svgRef.current;
-        if (svg) {
-          const pt = new DOMPoint(event.clientX, event.clientY);
-          const ctm = svg.getScreenCTM()?.inverse();
-          if (ctm) {
-            const svgPt = pt.matrixTransform(ctm);
-            const x = Math.round(svgPt.x * 100) / 100;
-            const y = Math.round(svgPt.y * 100) / 100;
-            if (x >= 0 && x <= room.width && y >= 0 && y <= room.height) {
-              onSeatAdd(x, y);
-            }
-          }
-        }
-      }
-    }
-
     setIsDragging(false);
     dragOriginRef.current = null;
-  }, [editMode, onSeatAdd, room.width, room.height]);
-
-  const handleWheel = useCallback(
-    (event: WheelEvent<HTMLDivElement>) => {
-      event.preventDefault();
-      const direction = event.deltaY > 0 ? -1 : 1;
-      const zoom = clamp(viewport.zoom + direction * ZOOM_STEP, MIN_ZOOM, MAX_ZOOM);
-      setViewport({ ...viewport, zoom });
-    },
-    [setViewport, viewport],
-  );
+  }, []);
 
   const transform = useMemo(
     () => `translate(${viewport.panX}px, ${viewport.panY}px) scale(${viewport.zoom})`,
@@ -153,25 +109,6 @@ export function RoomCanvas({
 
   return (
     <div className="room-canvas-viewer">
-      <div className="room-canvas-controls" role="group" aria-label="Zoom controls">
-        <button
-          type="button"
-          onClick={() => setViewport({ ...viewport, zoom: clamp(viewport.zoom - ZOOM_STEP, MIN_ZOOM, MAX_ZOOM) })}
-        >
-          −
-        </button>
-        <span>{Math.round(viewport.zoom * 100)}%</span>
-        <button
-          type="button"
-          onClick={() => setViewport({ ...viewport, zoom: clamp(viewport.zoom + ZOOM_STEP, MIN_ZOOM, MAX_ZOOM) })}
-        >
-          +
-        </button>
-        <button type="button" onClick={() => setViewport({ zoom: 1, panX: 0, panY: 0 })}>
-          Reset
-        </button>
-      </div>
-
       <div
         className="room-canvas-frame"
         style={{
@@ -180,13 +117,12 @@ export function RoomCanvas({
           minHeight: 0,
           overflow: 'hidden',
           touchAction: 'none',
-          cursor: isDragging ? 'grabbing' : editMode ? 'crosshair' : 'grab',
+          cursor: isDragging ? 'grabbing' : 'grab',
         }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
-        onWheel={handleWheel}
       >
         <div
           className="room-canvas-content"
@@ -221,7 +157,6 @@ export function RoomCanvas({
             )}
 
             <svg
-              ref={svgRef}
               className="room-canvas-seat-layer"
               viewBox={`0 0 ${room.width} ${room.height}`}
               preserveAspectRatio="xMidYMid meet"

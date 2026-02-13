@@ -20,13 +20,15 @@ const REGISTRY_PATH = path.join(ROOT, 'src', 'data', 'registry.json');
 
 /* ─── Tuneable parameters ─── */
 const BRIGHTNESS_THRESHOLD = 120; // pixels darker than this are "dark"
-const DILATION_RADIUS = 3;        // px — merges chair outline + number text
+const DILATION_RADIUS = 4;        // px — merges chair outline + number text
 const MIN_SIZE = 20;              // min bounding-box dimension (px)
 const MAX_SIZE = 120;             // max bounding-box dimension (px)
 const MIN_ASPECT = 0.4;
 const MAX_ASPECT = 2.5;
-const MIN_DARK_PIXELS = 600;      // minimum dark pixels in the component
+const MIN_DARK_PIXELS = 400;      // minimum dark pixels in the component
+const MAX_FILL_RATIO = 0.85;       // reject solid blobs (walls, furniture)
 const BORDER_MARGIN = 30;         // ignore components near image edges
+const MERGE_RADIUS = 50;          // px — de-duplicate centres within this distance
 
 /**
  * Detect seat positions in a PNG image.
@@ -116,6 +118,9 @@ async function detectSeats(imagePath) {
     if (ar < MIN_ASPECT || ar > MAX_ASPECT) continue;
     // Dark pixel count filter
     if (c.count < MIN_DARK_PIXELS) continue;
+    // Fill ratio filter — reject solid dark blobs (walls, furniture)
+    const area = (bw + 1) * (bh + 1);
+    if (c.count / area > MAX_FILL_RATIO) continue;
     // Border exclusion
     if (cx < BORDER_MARGIN || cx > w - BORDER_MARGIN) continue;
     if (cy < BORDER_MARGIN || cy > h - BORDER_MARGIN) continue;
@@ -125,7 +130,7 @@ async function detectSeats(imagePath) {
     seats.push({ x: cx, y: cy, w: bw, h: bh, px: c.count });
   }
 
-  /* 5. De-duplicate: merge seats whose centres are within 30px */
+  /* 5. De-duplicate: merge seats whose centres are within MERGE_RADIUS */
   seats.sort((a, b) => a.y - b.y || a.x - b.x);
   const merged = [];
   const used = new Set();
@@ -136,7 +141,7 @@ async function detectSeats(imagePath) {
       if (used.has(j)) continue;
       const dx = seats[j].x - seats[i].x;
       const dy = seats[j].y - seats[i].y;
-      if (Math.sqrt(dx * dx + dy * dy) < 30) {
+      if (Math.sqrt(dx * dx + dy * dy) < MERGE_RADIUS) {
         sx += seats[j].x;
         sy += seats[j].y;
         n++;
