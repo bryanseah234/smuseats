@@ -28,7 +28,7 @@ export const BUILDING_CONFIG: Record<string, BuildingConfig> = {
 export const BUILDING_ORDER = ['Admin', 'LKCSB', 'SCIS1', 'SOA', 'SOE_SCIS2', 'SOSS_CIS', 'YPHSL'];
 
 export function extractMeta(image: string, seatCount: number): RoomMeta {
-  const file = image.replace(/^\/maps\//, '').replace(/\.png$/i, '');
+  const file = image.replace(/^\/maps(?:-masked)?\//, '').replace(/\.png$/i, '');
 
   // Type
   let type: RoomMeta['type'] = 'Seminar Room';
@@ -44,6 +44,9 @@ export function extractMeta(image: string, seatCount: number): RoomMeta {
 
   const config = BUILDING_CONFIG[building] ?? { label: building, color: '#6b7280', icon: '🏢' };
 
+  // Replace folder-style underscores with slashes for display (e.g. SOE_SCIS2 → SOE/SCIS2)
+  const displayName = config.label !== building ? file.replace(building, config.label) : file;
+
   return {
     building,
     buildingLabel: config.label,
@@ -51,7 +54,7 @@ export function extractMeta(image: string, seatCount: number): RoomMeta {
     buildingIcon: config.icon,
     floor,
     type,
-    displayName: file,
+    displayName,
     seatCount,
   };
 }

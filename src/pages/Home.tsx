@@ -9,7 +9,7 @@ const Home = () => {
     const buildingCounts = new Map<string, number>();
     let totalSeats = 0;
     registry.rooms.forEach((room) => {
-      const building = room.image.replace(/^\/maps\//, '').split(' ')[0];
+      const building = room.image.replace(/^\/maps(?:-masked)?\//, '').split(' ')[0];
       buildingCounts.set(building, (buildingCounts.get(building) ?? 0) + 1);
       totalSeats += room.seats.length;
     });
@@ -20,6 +20,7 @@ const Home = () => {
     <div className="home-page">
       <section className="hero">
         <div className="hero__content">
+          <img src="/logo.png" alt="SMU Seats" className="hero__logo" />
           <h1 className="hero__title">SMU Seats</h1>
           <p className="hero__subtitle">
             Show your friends where you guys are seating in any SMU classroom

@@ -1,10 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "cleanUrls": true,
-  "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/((?!.*\\.).*)",
+      "source": "/rooms",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/room/:path*",
       "destination": "/index.html"
     }
   ]
