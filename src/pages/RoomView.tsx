@@ -154,6 +154,7 @@ const RoomView = () => {
       {/* -------- RIGHT: Panel -------- */}
       <div className="room-view-right">
         <div className="room-view-right-header">
+          <Link to="/rooms" className="back-link">← Back to rooms</Link>
           <h1>{room.name ?? `Room ${room.id}`}</h1>
           <p>Click seats to mark them. Drag to pan, use +/− to zoom.</p>
         </div>
