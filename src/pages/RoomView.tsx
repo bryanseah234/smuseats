@@ -1,94 +1,84 @@
-import { useMemo } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
-import { RoomCanvas, type RoomConfig, type ViewportState } from '../components/viewer/RoomCanvas';
+import { RoomCanvas, type RoomConfig } from '../components/viewer/RoomCanvas';
 import { type SeatModel } from '../components/viewer/Seat';
 import registry from '../data/registry.json';
-import { pdfRooms } from '../data/pdfRooms';
+import { useUrlState, type SeatValue } from '../hooks/useUrlState';
 
 type RegistryRoom = (typeof registry.rooms)[number];
-type RuntimeRoom = RegistryRoom | (typeof pdfRooms)[number];
 
-const runtimeRooms: RuntimeRoom[] = pdfRooms.length > 0 ? pdfRooms : registry.rooms;
-
-const toNumber = (value: string | null, fallback: number) => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : fallback;
-};
-
-const createSeatGrid = (room: RuntimeRoom): SeatModel[] => {
-  const columns = Math.max(2, Math.min(8, Math.floor(room.layout.width / 130)));
-  const rows = Math.max(2, Math.min(6, Math.floor(room.layout.height / 130)));
-
-  return Array.from({ length: columns * rows }, (_, index) => {
-    const row = Math.floor(index / columns);
-    const col = index % columns;
-
-    return {
-      id: `${room.id}-${index + 1}`,
-      label: `Seat ${index + 1}`,
-      x: Number((((col + 1) / (columns + 1)) * 100).toFixed(2)),
-      y: Number((((row + 1) / (rows + 1)) * 100).toFixed(2)),
-      status: 'available' as const,
-    };
-  });
-};
-
-const toRoomConfig = (room: RuntimeRoom): RoomConfig => ({
+const toRoomConfig = (room: RegistryRoom, seatData: Record<string, SeatValue>): RoomConfig => ({
   id: room.id,
   name: room.name,
-  imageUrl: 'imageUrl' in room ? room.imageUrl : undefined,
-  assetType: 'imageUrl' in room ? 'pdf' : undefined,
-  width: room.layout.width,
-  height: room.layout.height,
-  seats: createSeatGrid(room),
+  imageUrl: room.image,
+  width: room.width,
+  height: room.height,
+  seats: room.seats.map((seat) => ({
+    id: seat.id,
+    x: seat.x,
+    y: seat.y,
+    status: seatData[seat.id] ? 'reserved' : 'available',
+  })),
 });
 
 const RoomView = () => {
   const { roomId } = useParams<{ roomId: string }>();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { state, setRoomId, setSeatValue, setSeatData } = useUrlState();
+  const [selectedSeatId, setSelectedSeatId] = useState<string | undefined>();
+  const [copied, setCopied] = useState(false);
 
   const room = useMemo(() => {
-    const registryRoom = runtimeRooms.find((entry) => entry.id === roomId);
-    return registryRoom ? toRoomConfig(registryRoom) : null;
+    const registryRoom = registry.rooms.find((entry) => entry.id === roomId);
+    return registryRoom ? toRoomConfig(registryRoom, state.d) : null;
+  }, [roomId, state.d]);
+
+  useEffect(() => {
+    if (!roomId) {
+      return;
+    }
+
+    if (state.r && state.r !== roomId) {
+      navigate(`/room/${state.r}`, { replace: true });
+      return;
+    }
+
+    if (state.r !== roomId) {
+      setRoomId(roomId);
+      setSeatData({});
+    }
+  }, [navigate, roomId, setRoomId, setSeatData, state.r]);
+
+  useEffect(() => {
+    setSelectedSeatId(undefined);
   }, [roomId]);
 
-  const selectedSeatId = searchParams.get('seat') ?? undefined;
-
-  const viewportState = useMemo<ViewportState>(
-    () => ({
-      zoom: toNumber(searchParams.get('zoom'), 1),
-      panX: toNumber(searchParams.get('panX'), 0),
-      panY: toNumber(searchParams.get('panY'), 0),
-    }),
-    [searchParams],
+  const handleSeatSelect = useCallback(
+    (seat: SeatModel) => {
+      setSelectedSeatId(seat.id);
+      const currentValue = state.d[seat.id];
+      if (currentValue === undefined) {
+        setSeatValue(seat.id, 1);
+      } else if (currentValue === 1) {
+        setSeatValue(seat.id, undefined);
+      }
+    },
+    [setSeatValue, state.d],
   );
 
-  const updateSearchParams = (changes: Record<string, string | null | undefined>) => {
-    const next = new URLSearchParams(searchParams);
+  const handleCopyLink = useCallback(async () => {
+    if (typeof window === 'undefined' || !navigator.clipboard) {
+      return;
+    }
 
-    Object.entries(changes).forEach(([key, value]) => {
-      if (value === null || value === undefined || value === '') {
-        next.delete(key);
-      } else {
-        next.set(key, value);
-      }
-    });
+    await navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1200);
+  }, []);
 
-    setSearchParams(next, { replace: true });
-  };
-
-  const handleSeatSelect = (seat: SeatModel) => {
-    updateSearchParams({ seat: seat.id });
-  };
-
-  const handleViewportChange = (next: ViewportState) => {
-    updateSearchParams({
-      zoom: next.zoom.toFixed(2),
-      panX: Math.round(next.panX).toString(),
-      panY: Math.round(next.panY).toString(),
-    });
-  };
+  const selectedSeatValue = selectedSeatId ? state.d[selectedSeatId] : undefined;
+  const selectedSeatName = typeof selectedSeatValue === 'string' ? selectedSeatValue : '';
 
   if (!room) {
     return (
@@ -104,19 +94,81 @@ const RoomView = () => {
     <section className="room-view-page" style={{ display: 'grid', gap: 12, padding: 24 }}>
       <header>
         <h1 style={{ marginBottom: 4 }}>{room.name ?? `Room ${room.id}`}</h1>
-        <p style={{ margin: 0, color: '#4b5563' }}>Click a seat to select it. Scroll to zoom and drag to pan.</p>
+        <p style={{ margin: 0, color: '#4b5563' }}>
+          Click a seat to mark it taken, then add a name if needed. Scroll to zoom and drag to pan.
+        </p>
       </header>
 
       <RoomCanvas
         room={room}
         selectedSeatId={selectedSeatId}
         onSeatSelect={handleSeatSelect}
-        viewportState={viewportState}
-        onViewportStateChange={handleViewportChange}
       />
 
+      <section
+        style={{
+          display: 'grid',
+          gap: 12,
+          padding: 16,
+          borderRadius: 12,
+          border: '1px solid #e5e7eb',
+          background: '#f9fafb',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+          <span>Selected seat: {selectedSeatId ?? 'none'}</span>
+          <button type="button" onClick={handleCopyLink}>
+            {copied ? 'Copied!' : 'Share / Save'}
+          </button>
+        </div>
+
+        {selectedSeatId ? (
+          <div style={{ display: 'grid', gap: 8 }}>
+            <label>
+              Student name (optional)
+              <input
+                value={selectedSeatName}
+                placeholder="Enter name"
+                onChange={(event) => {
+                  const value = event.target.value.trim();
+                  if (!selectedSeatId) {
+                    return;
+                  }
+                  setSeatValue(selectedSeatId, value.length > 0 ? value : 1);
+                }}
+                style={{ display: 'block', marginTop: 6, width: '100%', maxWidth: 320 }}
+              />
+            </label>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!selectedSeatId) {
+                    return;
+                  }
+                  const currentValue = state.d[selectedSeatId];
+                  setSeatValue(selectedSeatId, currentValue ? undefined : 1);
+                }}
+              >
+                {selectedSeatValue ? 'Clear seat' : 'Mark taken'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (selectedSeatId) {
+                    setSeatValue(selectedSeatId, undefined);
+                  }
+                }}
+              >
+                Remove assignment
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </section>
+
       <footer style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span>Selected seat: {selectedSeatId ?? 'none'}</span>
+        <span>Seats with names or taken status are encoded in the URL.</span>
         <Link to="/">Back home</Link>
       </footer>
     </section>

@@ -14,7 +14,6 @@ export interface RoomConfig {
   id: string;
   name?: string;
   imageUrl?: string;
-  assetType?: 'image' | 'pdf';
   width: number;
   height: number;
   seats: SeatModel[];
@@ -172,21 +171,12 @@ export function RoomCanvas({
           }}
         >
           {room.imageUrl ? (
-            room.assetType === 'pdf' ? (
-              <object
-                data={room.imageUrl}
-                type="application/pdf"
-                aria-label={room.name ?? room.id}
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
-              />
-            ) : (
-              <img
-                src={room.imageUrl}
-                alt={room.name ?? room.id}
-                draggable={false}
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
-              />
-            )
+            <img
+              src={room.imageUrl}
+              alt={room.name ?? room.id}
+              draggable={false}
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+            />
           ) : (
             <div
               aria-hidden
@@ -199,7 +189,13 @@ export function RoomCanvas({
             />
           )}
 
-          <div className="room-canvas-seat-layer" style={{ position: 'absolute', inset: 0 }}>
+          <svg
+            className="room-canvas-seat-layer"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+            aria-hidden={false}
+          >
             {room.seats.map((seat) => (
               <Seat
                 key={seat.id}
@@ -208,7 +204,7 @@ export function RoomCanvas({
                 onSelect={onSeatSelect}
               />
             ))}
-          </div>
+          </svg>
         </div>
       </div>
     </div>
