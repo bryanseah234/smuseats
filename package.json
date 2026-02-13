@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "extract:pdf": "node scripts/extract-pdf-png.mjs",
-    "seed:seats": "node scripts/seed-seats.mjs"
+    "seed:seats": "node scripts/seed-seats.mjs",
+    "gen:favicon": "node scripts/generate-favicon.mjs"
   },
   "dependencies": {
     "lz-string": "^1.5.0",
@@ -29,6 +30,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.24",
     "pdfjs-dist": "^4.10.38",
+    "png-to-ico": "^3.0.1",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
     "typescript": "~5.9.3",
