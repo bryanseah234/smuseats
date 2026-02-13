@@ -31,6 +31,8 @@ interface RoomCanvasProps {
   onSeatSelect?: (seat: SeatModel) => void;
   viewportState?: ViewportState;
   onViewportStateChange?: (state: ViewportState) => void;
+  editMode?: boolean;
+  onSeatAdd?: (x: number, y: number) => void;
 }
 
 const MIN_ZOOM = 1;
@@ -45,10 +47,13 @@ export function RoomCanvas({
   onSeatSelect,
   viewportState,
   onViewportStateChange,
+  editMode = false,
+  onSeatAdd,
 }: RoomCanvasProps) {
   const [localViewport, setLocalViewport] = useState<ViewportState>({ zoom: 1, panX: 0, panY: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dragOriginRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
 
   const viewport = viewportState ?? localViewport;
 
@@ -105,9 +110,31 @@ export function RoomCanvas({
     if (event && event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
+
+    // In edit mode, if pointer barely moved, treat as a click → add a seat
+    if (editMode && onSeatAdd && dragOriginRef.current && event) {
+      const dx = event.clientX - dragOriginRef.current.x;
+      const dy = event.clientY - dragOriginRef.current.y;
+      if (Math.abs(dx) < 5 && Math.abs(dy) < 5) {
+        const svg = svgRef.current;
+        if (svg) {
+          const pt = new DOMPoint(event.clientX, event.clientY);
+          const ctm = svg.getScreenCTM()?.inverse();
+          if (ctm) {
+            const svgPt = pt.matrixTransform(ctm);
+            const x = Math.round(svgPt.x * 100) / 100;
+            const y = Math.round(svgPt.y * 100) / 100;
+            if (x >= 0 && x <= room.width && y >= 0 && y <= room.height) {
+              onSeatAdd(x, y);
+            }
+          }
+        }
+      }
+    }
+
     setIsDragging(false);
     dragOriginRef.current = null;
-  }, []);
+  }, [editMode, onSeatAdd, room.width, room.height]);
 
   const handleWheel = useCallback(
     (event: WheelEvent<HTMLDivElement>) => {
@@ -131,7 +158,7 @@ export function RoomCanvas({
           type="button"
           onClick={() => setViewport({ ...viewport, zoom: clamp(viewport.zoom - ZOOM_STEP, MIN_ZOOM, MAX_ZOOM) })}
         >
-          -
+          −
         </button>
         <span>{Math.round(viewport.zoom * 100)}%</span>
         <button
@@ -149,11 +176,11 @@ export function RoomCanvas({
         className="room-canvas-frame"
         style={{
           position: 'relative',
-          width: '100%',
-          aspectRatio: `${room.width} / ${room.height}`,
+          flex: '1 1 0%',
+          minHeight: 0,
           overflow: 'hidden',
           touchAction: 'none',
-          cursor: isDragging ? 'grabbing' : 'grab',
+          cursor: isDragging ? 'grabbing' : editMode ? 'crosshair' : 'grab',
         }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -168,43 +195,49 @@ export function RoomCanvas({
             inset: 0,
             transform,
             transformOrigin: 'top left',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          {room.imageUrl ? (
-            <img
-              src={room.imageUrl}
-              alt={room.name ?? room.id}
-              draggable={false}
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
-            />
-          ) : (
-            <div
-              aria-hidden
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background:
-                  'repeating-linear-gradient(0deg, #f8fafc, #f8fafc 24px, #e2e8f0 24px, #e2e8f0 25px), repeating-linear-gradient(90deg, #f8fafc, #f8fafc 24px, #e2e8f0 24px, #e2e8f0 25px)',
-              }}
-            />
-          )}
-
-          <svg
-            className="room-canvas-seat-layer"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
-            aria-hidden={false}
-          >
-            {room.seats.map((seat) => (
-              <Seat
-                key={seat.id}
-                seat={seat}
-                selected={seat.id === selectedSeatId}
-                onSelect={onSeatSelect}
+          <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+            {room.imageUrl ? (
+              <img
+                src={room.imageUrl}
+                alt={room.name ?? room.id}
+                draggable={false}
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
               />
-            ))}
-          </svg>
+            ) : (
+              <div
+                aria-hidden
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background:
+                    'repeating-linear-gradient(0deg, #f8fafc, #f8fafc 24px, #e2e8f0 24px, #e2e8f0 25px), repeating-linear-gradient(90deg, #f8fafc, #f8fafc 24px, #e2e8f0 24px, #e2e8f0 25px)',
+                }}
+              />
+            )}
+
+            <svg
+              ref={svgRef}
+              className="room-canvas-seat-layer"
+              viewBox={`0 0 ${room.width} ${room.height}`}
+              preserveAspectRatio="xMidYMid meet"
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+              aria-hidden={false}
+            >
+              {room.seats.map((seat) => (
+                <Seat
+                  key={seat.id}
+                  seat={seat}
+                  selected={seat.id === selectedSeatId}
+                  onSelect={onSeatSelect}
+                />
+              ))}
+            </svg>
+          </div>
         </div>
       </div>
     </div>
