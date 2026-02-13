@@ -61,6 +61,15 @@ sequenceDiagram
 
 ## Getting started (step‑by‑step)
 
+## Quick start
+
+```bash
+npm install
+npm run extract:pdf
+npm run seed:seats
+npm run dev
+```
+
 1) **Install Node.js** (LTS recommended).
 
 1) **Install dependencies:**
