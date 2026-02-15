@@ -305,31 +305,44 @@ function scoreSeat(seat, allSeats, medianDist) {
 function refineSeatList(candidates, capacity, minDistThreshold) {
   if (candidates.length <= 1) return candidates;
 
-  // Step A: Remove duplicates (within minDistThreshold / 2)
-  const halfDist = minDistThreshold * 0.5;
-  let seats = [];
-  const usedA = new Set();
-  for (let i = 0; i < candidates.length; i++) {
-    if (usedA.has(i)) continue;
-    let sx = candidates[i].x,
-      sy = candidates[i].y,
-      sn = candidates[i].n || 1,
-      cnt = 1;
-    for (let j = i + 1; j < candidates.length; j++) {
-      if (usedA.has(j)) continue;
-      if (Math.hypot(candidates[j].x - candidates[i].x, candidates[j].y - candidates[i].y) < halfDist) {
-        sx += candidates[j].x;
-        sy += candidates[j].y;
-        sn += candidates[j].n || 1;
-        cnt++;
-        usedA.add(j);
+  // Merge any seats within MERGE_DIST — these are duplicate detections
+  // from the same seat number (different digits/strokes detected separately).
+  // 50px prevents the visual clustering the user sees.
+  const MERGE_DIST = 50;
+
+  // Step A: Merge close seats iteratively
+  let seats = [...candidates].map((s) => ({
+    x: s.x,
+    y: s.y,
+    n: s.n || 1,
+  }));
+
+  let merged = true;
+  while (merged) {
+    merged = false;
+    let bestI = -1,
+      bestJ = -1,
+      bestD = Infinity;
+    for (let i = 0; i < seats.length; i++) {
+      for (let j = i + 1; j < seats.length; j++) {
+        const d = Math.hypot(seats[i].x - seats[j].x, seats[i].y - seats[j].y);
+        if (d < bestD) {
+          bestD = d;
+          bestI = i;
+          bestJ = j;
+        }
       }
     }
-    seats.push({
-      x: Math.round(sx / cnt),
-      y: Math.round(sy / cnt),
-      n: sn,
-    });
+    if (bestD < MERGE_DIST && bestI >= 0) {
+      const a = seats[bestI],
+        b = seats[bestJ];
+      const totalN = a.n + b.n;
+      const mx = Math.round((a.x * a.n + b.x * b.n) / totalN);
+      const my = Math.round((a.y * a.n + b.y * b.n) / totalN);
+      seats[bestI] = { x: mx, y: my, n: totalN };
+      seats.splice(bestJ, 1);
+      merged = true;
+    }
   }
 
   // Step B: Compute median nearest-neighbor distance
@@ -345,27 +358,23 @@ function refineSeatList(candidates, capacity, minDistThreshold) {
       if (best < Infinity) dists.push(best);
     }
     dists.sort((a, b) => a - b);
-    return dists[Math.floor(dists.length / 2)] || 60;
+    return dists[Math.floor(dists.length / 2)] || 80;
   }
 
-  const medDist = medianNN(seats);
-
-  // Step C: Score every seat
-  for (const s of seats) {
-    s._score = scoreSeat(s, seats, medDist);
-  }
-
-  // Step D: If we have too many, iteratively remove lowest-scored
-  while (seats.length > capacity) {
-    seats.sort((a, b) => a._score - b._score);
-
-    // Remove the worst-scored seat
-    seats.shift();
-
-    // Re-score remaining (neighbors changed)
-    const newMed = medianNN(seats);
+  // Step C: If still over capacity, prune lowest-scored seats
+  if (seats.length > capacity) {
+    const medDist = medianNN(seats);
     for (const s of seats) {
-      s._score = scoreSeat(s, seats, newMed);
+      s._score = scoreSeat(s, seats, medDist);
+    }
+
+    while (seats.length > capacity) {
+      seats.sort((a, b) => a._score - b._score);
+      seats.shift();
+      const newMed = medianNN(seats);
+      for (const s of seats) {
+        s._score = scoreSeat(s, seats, newMed);
+      }
     }
   }
 
@@ -381,74 +390,61 @@ async function processRoom(room, learned) {
   if (!fs.existsSync(imgPath)) return null;
 
   const capacity = room.capacity || room.seats.length;
-  const currentCount = room.seats.length;
-  const diff = currentCount - capacity;
 
-  // Strategy depends on whether we have too many or too few
-  let candidates;
+  // Always combine existing seats with fresh detection(s).
+  // This ensures we have enough candidates even after merge removes duplicates.
+  const configs = [
+    // Default
+    {},
+    // More sensitive threshold
+    { brightnessThreshold: 65 },
+    // Larger components allowed
+    { maxComponentDim: 70, maxDarkPixels: 2000 },
+    // Larger cluster radius
+    { clusterRadius: 55, mergeRadius: 50 },
+    // Combined relaxed
+    { brightnessThreshold: 60, maxComponentDim: 65, clusterRadius: 50 },
+  ];
 
-  if (diff >= -5 && diff <= 0) {
-    // Close or slightly under: just use existing seats, minor cleanup
-    candidates = room.seats.map((s) => ({ x: s.x, y: s.y, n: 2 }));
-  } else if (diff > 0) {
-    // Too many: use existing, prune down
-    candidates = room.seats.map((s) => ({ x: s.x, y: s.y, n: 2 }));
-  } else {
-    // Significantly under: re-detect with relaxed params to find more
-    // Try multiple configurations and merge results
-    const configs = [
-      // Default
-      {},
-      // More sensitive threshold
-      { brightnessThreshold: 65 },
-      // Larger components allowed
-      { maxComponentDim: 70, maxDarkPixels: 2000 },
-      // Larger cluster radius
-      { clusterRadius: 55, mergeRadius: 50 },
-      // Combined relaxed
-      { brightnessThreshold: 60, maxComponentDim: 65, clusterRadius: 50 },
-    ];
+  let allCandidates = [
+    ...room.seats.map((s) => ({ x: s.x, y: s.y, n: 2 })),
+  ];
 
-    let allCandidates = [
-      ...room.seats.map((s) => ({ x: s.x, y: s.y, n: 2 })),
-    ];
+  for (const config of configs) {
+    try {
+      const detected = await detectSeatsFromImage(imgPath, room.id, config);
+      allCandidates.push(...detected);
+    } catch {
+      /* ignore config failures */
+    }
+  }
 
-    for (const config of configs) {
-      try {
-        const detected = await detectSeatsFromImage(imgPath, room.id, config);
-        allCandidates.push(...detected);
-      } catch {
-        /* ignore config failures */
+  // De-duplicate all candidates (pre-merge at 30px)
+  const candidates = [];
+  const usedC = new Set();
+  allCandidates.sort((a, b) => b.n - a.n); // prefer higher blob count
+  for (let i = 0; i < allCandidates.length; i++) {
+    if (usedC.has(i)) continue;
+    const c = allCandidates[i];
+    let sx = c.x,
+      sy = c.y,
+      sn = c.n,
+      cnt = 1;
+    for (let j = i + 1; j < allCandidates.length; j++) {
+      if (usedC.has(j)) continue;
+      if (Math.hypot(allCandidates[j].x - c.x, allCandidates[j].y - c.y) < 30) {
+        sx += allCandidates[j].x;
+        sy += allCandidates[j].y;
+        sn += allCandidates[j].n;
+        cnt++;
+        usedC.add(j);
       }
     }
-
-    // De-duplicate all candidates
-    candidates = [];
-    const usedC = new Set();
-    allCandidates.sort((a, b) => b.n - a.n); // prefer higher blob count
-    for (let i = 0; i < allCandidates.length; i++) {
-      if (usedC.has(i)) continue;
-      const c = allCandidates[i];
-      let sx = c.x,
-        sy = c.y,
-        sn = c.n,
-        cnt = 1;
-      for (let j = i + 1; j < allCandidates.length; j++) {
-        if (usedC.has(j)) continue;
-        if (Math.hypot(allCandidates[j].x - c.x, allCandidates[j].y - c.y) < 30) {
-          sx += allCandidates[j].x;
-          sy += allCandidates[j].y;
-          sn += allCandidates[j].n;
-          cnt++;
-          usedC.add(j);
-        }
-      }
-      candidates.push({
-        x: Math.round(sx / cnt),
-        y: Math.round(sy / cnt),
-        n: sn,
-      });
-    }
+    candidates.push({
+      x: Math.round(sx / cnt),
+      y: Math.round(sy / cnt),
+      n: sn,
+    });
   }
 
   // Apply capacity-aware pruning
@@ -539,14 +535,39 @@ async function main() {
   const targetRoomId = process.argv[2] || null;
   const registry = JSON.parse(fs.readFileSync(REGISTRY_PATH, 'utf8'));
 
-  // Identify manually edited rooms (exact capacity match)
+  const CLUSTER_THRESHOLD = 50;
+
+  // Helper: check if a room has any seat pair closer than threshold
+  function hasCluster(room) {
+    for (let i = 0; i < room.seats.length; i++) {
+      for (let j = i + 1; j < room.seats.length; j++) {
+        if (
+          Math.hypot(
+            room.seats[i].x - room.seats[j].x,
+            room.seats[i].y - room.seats[j].y,
+          ) < CLUSTER_THRESHOLD
+        )
+          return true;
+      }
+    }
+    return false;
+  }
+
+  // Only consider a room "truly edited" if it matches capacity AND has no clusters
   const editedIds = new Set(
     registry.rooms
-      .filter((r) => r.capacity && r.seats.length === r.capacity)
+      .filter(
+        (r) =>
+          r.capacity &&
+          r.seats.length === r.capacity &&
+          !hasCluster(r),
+      )
       .map((r) => r.id),
   );
 
-  console.log(`\n🔍 Learning from ${editedIds.size} manually edited rooms...\n`);
+  console.log(
+    `\n🔍 Learning from ${editedIds.size} cluster-free edited rooms...\n`,
+  );
   const learned = learnFromEdited(registry);
 
   let processed = 0;
@@ -557,7 +578,7 @@ async function main() {
   for (const room of registry.rooms) {
     if (targetRoomId && room.id !== targetRoomId) continue;
 
-    // Skip manually edited rooms
+    // Skip truly-edited rooms (match capacity + no clusters)
     if (editedIds.has(room.id) && !targetRoomId) {
       skipped++;
       totalSeats += room.seats.length;
