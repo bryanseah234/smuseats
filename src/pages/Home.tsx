@@ -23,7 +23,7 @@ const Home = () => {
           <img src="/logo.png" alt="SMU Seats" className="hero__logo" />
           <h1 className="hero__title">SMU Seats</h1>
           <p className="hero__subtitle">
-            Show your friends where you guys are seating in any SMU classroom
+            Show your friends where you are seated in class
           </p>
           <Link to="/rooms" className="hero__cta">
             Browse Rooms →
@@ -32,17 +32,20 @@ const Home = () => {
       </section>
 
       <section className="stats-strip">
-        <div className="stat-card">
-          <span className="stat-card__number">{stats.totalRooms}</span>
-          <span className="stat-card__label">Rooms</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-card__number">{stats.buildingCounts.size}</span>
-          <span className="stat-card__label">Buildings</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-card__number">{stats.totalSeats.toLocaleString()}+</span>
-          <span className="stat-card__label">Seats</span>
+        <h2 className="stats-strip__heading">{stats.totalRooms} rooms &middot; {stats.buildingCounts.size} buildings &middot; {stats.totalSeats.toLocaleString()}+ seats</h2>
+        <div className="stats-strip__cards">
+          <div className="stat-card">
+            <span className="stat-card__number">{stats.totalRooms}</span>
+            <span className="stat-card__label">Rooms</span>
+          </div>
+          <div className="stat-card">
+            <span className="stat-card__number">{stats.buildingCounts.size}</span>
+            <span className="stat-card__label">Buildings</span>
+          </div>
+          <div className="stat-card">
+            <span className="stat-card__number">{stats.totalSeats.toLocaleString()}+</span>
+            <span className="stat-card__label">Seats</span>
+          </div>
         </div>
       </section>
 
@@ -76,7 +79,7 @@ const Home = () => {
             return (
               <Link key={building} to={`/rooms?building=${building}`} className="building-card">
                 <div className="building-card__icon" style={{ background: config.color }}>
-                  {config.icon}
+                  {config.label.charAt(0)}
                 </div>
                 <div className="building-card__body">
                   <h3>{config.label}</h3>
