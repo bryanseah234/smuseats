@@ -585,18 +585,19 @@ body::-webkit-scrollbar {
 }
 
 .zoom-controls {
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
+	display: flex;
+	gap: 8px;
+	width: 100%;
 }
 
 .zoom-controls button {
+	flex: 1;
 	border: 2px solid var(--color-gray-300);
 	background: #ffffff;
 	border-radius: var(--radius-full);
-	padding: 6px 12px;
+	padding: 10px 0;
 	cursor: pointer;
-	font-size: 0.85rem;
+	font-size: 1rem;
 	font-weight: 600;
 	line-height: 1;
 	transition: background 0.15s, border-color 0.15s;
@@ -605,13 +606,6 @@ body::-webkit-scrollbar {
 .zoom-controls button:hover {
 	background: #f3f4f6;
 	border-color: var(--color-gray-400);
-}
-
-.zoom-controls span {
-	font-size: 0.75rem;
-	color: #6b7280;
-	min-width: 36px;
-	text-align: center;
 }
 
 .btn {
@@ -960,5 +954,165 @@ body::-webkit-scrollbar {
 
 	.building-card {
 		padding: 16px 12px;
+	}
+}
+
+/* ═══════════════════════════════════════════════════════
+   Seat Editor (/edit)
+   ═══════════════════════════════════════════════════════ */
+
+.edit-page {
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+	height: 100dvh;
+	overflow: hidden;
+	background: #0f172a;
+}
+
+/* ---- toolbar ---- */
+
+.edit-toolbar {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 14px;
+	background: #ffffff;
+	border-bottom: 1px solid var(--color-gray-200);
+	flex-wrap: wrap;
+	z-index: 10;
+}
+
+.edit-toolbar__back {
+	white-space: nowrap;
+}
+
+.edit-toolbar__nav {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.edit-toolbar__select {
+	min-width: 240px;
+	max-width: 400px;
+	padding: 7px 10px;
+	border: 2px solid var(--color-gray-300);
+	border-radius: var(--radius-full);
+	font-size: 0.8rem;
+	font-weight: 600;
+	outline: none;
+	background: #fff;
+}
+
+.edit-toolbar__select:focus {
+	border-color: var(--color-primary);
+}
+
+.edit-toolbar__count {
+	font-size: 0.82rem;
+	font-weight: 700;
+	color: var(--color-primary);
+	background: #eff6ff;
+	padding: 5px 14px;
+	border-radius: var(--radius-full);
+	white-space: nowrap;
+}
+
+.edit-toolbar__actions {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-left: auto;
+	flex-wrap: wrap;
+}
+
+.edit-toolbar__actions .btn {
+	padding: 7px 14px;
+	font-size: 0.78rem;
+}
+
+/* ---- canvas ---- */
+
+.editor-canvas-wrapper {
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+	position: relative;
+}
+
+.editor-canvas-frame {
+	position: absolute;
+	inset: 0;
+	touch-action: none;
+	cursor: grab;
+	overflow: hidden;
+}
+
+.editor-canvas-frame.dragging {
+	cursor: grabbing;
+}
+
+.editor-canvas-frame.add-mode {
+	cursor: crosshair;
+}
+
+/* ---- editor seats ---- */
+
+.editor-seat {
+	cursor: move;
+}
+
+.editor-seat circle {
+	fill: rgba(59, 130, 246, 0.55);
+	stroke: #ffffff;
+	stroke-width: 2;
+	transition: fill 0.1s, stroke 0.1s;
+}
+
+.editor-seat:hover circle {
+	fill: rgba(59, 130, 246, 0.85);
+}
+
+.editor-seat--selected circle {
+	fill: rgba(239, 68, 68, 0.7);
+	stroke: #fbbf24;
+	stroke-width: 3;
+}
+
+.editor-seat--selected:hover circle {
+	fill: rgba(239, 68, 68, 0.9);
+}
+
+/* ---- status bar ---- */
+
+.edit-status-bar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 6px 16px;
+	background: #ffffff;
+	border-top: 1px solid var(--color-gray-200);
+	font-size: 0.78rem;
+	color: var(--color-gray-500);
+}
+
+/* ---- responsive ---- */
+
+@media (max-width: 768px) {
+	.edit-toolbar {
+		gap: 8px;
+		padding: 8px 10px;
+	}
+
+	.edit-toolbar__select {
+		min-width: 160px;
+		max-width: 100%;
+	}
+
+	.edit-toolbar__actions {
+		width: 100%;
+		margin-left: 0;
+		justify-content: flex-start;
 	}
 }

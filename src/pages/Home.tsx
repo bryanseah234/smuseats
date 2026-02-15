@@ -32,7 +32,7 @@ const Home = () => {
       </section>
 
       <section className="stats-strip">
-        <h2 className="stats-strip__heading">{stats.totalRooms} rooms &middot; {stats.buildingCounts.size} buildings &middot; {stats.totalSeats.toLocaleString()}+ seats</h2>
+        <h2 className="stats-strip__heading">We have</h2>
         <div className="stats-strip__cards">
           <div className="stat-card">
             <span className="stat-card__number">{stats.totalRooms}</span>
