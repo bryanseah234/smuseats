@@ -144,21 +144,9 @@ body::-webkit-scrollbar {
 }
 
 .stats-strip {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 24px;
-	padding: 56px 24px;
-	max-width: 700px;
+	padding: 64px 24px;
+	max-width: 800px;
 	margin: 0 auto;
-}
-
-.stats-strip__heading {
-	font-size: 1.15rem;
-	font-weight: 700;
-	color: var(--color-gray-700);
-	margin: 0;
-	letter-spacing: -0.01em;
 	text-align: center;
 }
 
@@ -252,8 +240,8 @@ body::-webkit-scrollbar {
 }
 
 .building-shortcuts {
-	padding: 0 24px 72px;
-	max-width: 900px;
+	padding: 64px 24px;
+	max-width: 800px;
 	margin: 0 auto;
 	text-align: center;
 }
@@ -877,8 +865,7 @@ body::-webkit-scrollbar {
 	}
 
 	.stats-strip {
-		gap: 12px;
-		padding: 32px 16px;
+		padding: 40px 16px;
 	}
 
 	.stats-strip__cards {
