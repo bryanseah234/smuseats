@@ -160,7 +160,6 @@ const RoomView = () => {
           <div className="zoom-controls">
             <button type="button" onClick={zoomIn} title="Zoom in">+</button>
             <button type="button" onClick={zoomOut} title="Zoom out">−</button>
-            <span>{Math.round(viewport.zoom * 100)}%</span>
           </div>
           <button type="button" className="btn btn--secondary" onClick={zoomReset}>
             Reset View
