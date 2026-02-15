@@ -158,13 +158,15 @@ const RoomView = () => {
 
         <div className="room-view-right-toolbar">
           <div className="zoom-controls">
+            <button type="button" onClick={zoomIn} title="Zoom in">+</button>
             <button type="button" onClick={zoomOut} title="Zoom out">−</button>
             <span>{Math.round(viewport.zoom * 100)}%</span>
-            <button type="button" onClick={zoomIn} title="Zoom in">+</button>
-            <button type="button" onClick={zoomReset} title="Reset view">Reset</button>
           </div>
+          <button type="button" className="btn btn--secondary" onClick={zoomReset}>
+            Reset View
+          </button>
           <button type="button" className="btn btn--primary" onClick={handleCopyLink}>
-            {copied ? '✓ Copied!' : '🔗 Copy URL'}
+            {copied ? 'Copied!' : 'Copy URL'}
           </button>
           <button
             type="button"
@@ -172,7 +174,7 @@ const RoomView = () => {
             onClick={handleClearAll}
             disabled={reservedEntries.length === 0}
           >
-            Clear all
+            Clear All
           </button>
         </div>
 

@@ -140,7 +140,7 @@ const RoomsPage = () => {
                 className={`pill ${selectedBuilding === key ? 'pill--active' : ''}`}
                 onClick={() => setFilter('building', selectedBuilding === key ? null : key)}
               >
-                {config.icon} {config.label}
+                {config.label}
                 <span className="pill__count">{count}</span>
               </button>
             ))}

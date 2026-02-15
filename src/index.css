@@ -29,6 +29,12 @@ body {
 	margin: 0;
 	min-height: 100vh;
 	background-color: var(--color-gray-50);
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
+body::-webkit-scrollbar {
+	display: none;
 }
 
 /* ---------- Common ---------- */
@@ -79,10 +85,12 @@ body {
 	padding: 100px 24px 80px;
 	text-align: center;
 	color: #ffffff;
-	min-height: 50vh;
+	min-height: 100vh;
+	min-height: 100dvh;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	box-sizing: border-box;
 }
 
 .hero__content {
@@ -118,29 +126,47 @@ body {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
-	background: #ffffff;
-	color: #1e40af;
+	background: #111827;
+	color: #ffffff;
 	padding: 16px 40px;
 	border-radius: var(--radius-full);
 	font-size: 1.1rem;
 	font-weight: 600;
 	text-decoration: none;
-	transition: transform 0.15s, box-shadow 0.15s;
+	transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
 	box-shadow: var(--shadow-md);
 }
 
 .hero__cta:hover {
+	background: #374151;
 	transform: translateY(-2px);
 	box-shadow: var(--shadow-lg);
 }
 
 .stats-strip {
 	display: flex;
-	justify-content: center;
-	gap: 32px;
+	flex-direction: column;
+	align-items: center;
+	gap: 24px;
 	padding: 56px 24px;
 	max-width: 700px;
 	margin: 0 auto;
+}
+
+.stats-strip__heading {
+	font-size: 1.15rem;
+	font-weight: 700;
+	color: var(--color-gray-700);
+	margin: 0;
+	letter-spacing: -0.01em;
+	text-align: center;
+}
+
+.stats-strip__cards {
+	display: flex;
+	justify-content: center;
+	gap: 32px;
+	width: 100%;
 }
 
 .stat-card {
@@ -275,8 +301,10 @@ body {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 1.6rem;
+	font-size: 1.4rem;
+	font-weight: 800;
 	color: #ffffff;
+	letter-spacing: -0.02em;
 }
 
 .building-card__body h3 {
@@ -378,12 +406,12 @@ body {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	padding: 6px 14px;
-	border: 1px solid var(--color-gray-300);
+	padding: 8px 16px;
+	border: 2px solid var(--color-gray-300);
 	border-radius: var(--radius-full);
 	background: #ffffff;
 	font-size: 0.8rem;
-	font-weight: 500;
+	font-weight: 600;
 	cursor: pointer;
 	color: var(--color-gray-700);
 	transition: all 0.15s;
@@ -549,10 +577,9 @@ body {
 }
 
 .room-view-right-toolbar {
-	padding: 8px 20px;
+	padding: 12px 20px;
 	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
+	flex-direction: column;
 	gap: 8px;
 	border-bottom: 1px solid #f3f4f6;
 }
@@ -564,19 +591,20 @@ body {
 }
 
 .zoom-controls button {
-	border: 1px solid #d1d5db;
+	border: 2px solid var(--color-gray-300);
 	background: #ffffff;
-	border-radius: 6px;
-	padding: 4px 10px;
+	border-radius: var(--radius-full);
+	padding: 6px 12px;
 	cursor: pointer;
-	font-size: 0.8rem;
-	font-weight: 500;
+	font-size: 0.85rem;
+	font-weight: 600;
 	line-height: 1;
+	transition: background 0.15s, border-color 0.15s;
 }
 
 .zoom-controls button:hover {
 	background: #f3f4f6;
-	border-color: #9ca3af;
+	border-color: var(--color-gray-400);
 }
 
 .zoom-controls span {
@@ -589,31 +617,45 @@ body {
 .btn {
 	display: inline-flex;
 	align-items: center;
+	justify-content: center;
 	gap: 6px;
-	border: 1px solid #d1d5db;
+	border: 2px solid #111827;
 	background: #ffffff;
-	border-radius: 8px;
-	padding: 7px 14px;
-	font-size: 0.8rem;
+	border-radius: var(--radius-full);
+	padding: 10px 20px;
+	font-size: 0.85rem;
 	cursor: pointer;
-	font-weight: 500;
-	transition: background 0.15s, border-color 0.15s;
+	font-weight: 600;
+	transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
 }
 
 .btn:hover {
-	background: #f9fafb;
-	border-color: #9ca3af;
+	background: #f3f4f6;
+}
+
+.btn:active {
+	transform: scale(0.97);
+}
+
+.btn--secondary {
+	border-color: var(--color-gray-300);
+	color: var(--color-gray-700);
+}
+
+.btn--secondary:hover {
+	border-color: var(--color-gray-400);
+	background: var(--color-gray-50);
 }
 
 .btn--primary {
-	background: #3b82f6;
+	background: #111827;
 	color: #ffffff;
-	border-color: #3b82f6;
+	border-color: #111827;
 }
 
 .btn--primary:hover {
-	background: #2563eb;
-	border-color: #2563eb;
+	background: #374151;
+	border-color: #374151;
 }
 
 .btn--danger {
@@ -623,10 +665,11 @@ body {
 
 .btn--danger:hover:not(:disabled) {
 	background: #fef2f2;
+	border-color: #dc2626;
 }
 
 .btn:disabled {
-	opacity: 0.4;
+	opacity: 0.35;
 	cursor: not-allowed;
 }
 
@@ -842,6 +885,10 @@ body {
 	.stats-strip {
 		gap: 12px;
 		padding: 32px 16px;
+	}
+
+	.stats-strip__cards {
+		gap: 12px;
 	}
 
 	.stat-card {
