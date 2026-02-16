@@ -13,6 +13,7 @@ import Home from './pages/Home';
 import RoomView from './pages/RoomView';
 import RoomsPage from './pages/RoomsPage';
 import EditSeats from './pages/EditSeats';
+import Compare from './pages/Compare';
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
       <Route path="/rooms" element={<RoomsPage />} />
       <Route path="/room/:roomId" element={<RoomView />} />
       <Route path="/edit" element={<EditSeats />} />
+      <Route path="/compare" element={<Compare />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
