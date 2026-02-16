@@ -795,6 +795,20 @@ body::-webkit-scrollbar {
 	position: relative;
 }
 
+/* Loading spinner shown while floor-plan PNG is downloading */
+.canvas-loading-spinner {
+	width: 36px;
+	height: 36px;
+	border: 3px solid var(--color-gray-200);
+	border-top-color: var(--color-primary);
+	border-radius: 50%;
+	animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+	to { transform: rotate(360deg); }
+}
+
 /* zoom controls moved to right panel */
 
 /* ---------- Seat dots ---------- */
@@ -895,6 +909,9 @@ body::-webkit-scrollbar {
 
 	.room-view-page {
 		flex-direction: column;
+		height: auto;
+		min-height: 100vh;
+		overflow: visible;
 	}
 
 	.room-view-left {
@@ -906,7 +923,9 @@ body::-webkit-scrollbar {
 		width: 100%;
 		min-width: unset;
 		max-width: unset;
-		height: 50vh;
+		height: auto;
+		min-height: 50vh;
+		overflow: visible;
 		border-left: none;
 		border-top: 1px solid #e5e7eb;
 	}
