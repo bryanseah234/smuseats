@@ -179,8 +179,8 @@ const Compare = () => {
   const [srcImg, setSrcImg] = useState<HTMLImageElement | null>(null);
 
   /* CSS filter sliders */
-  const [cssContrast, setCssContrast] = useState(1.5);
-  const [cssBrightness, setCssBrightness] = useState(0.9);
+  const [cssContrast, setCssContrast] = useState(1.0);
+  const [cssBrightness, setCssBrightness] = useState(1.0);
   const [cssSaturate, setCssSaturate] = useState(1.0);
 
   /* Gamma slider */
