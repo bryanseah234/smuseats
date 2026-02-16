@@ -21,6 +21,7 @@ export interface SeatModel {
 interface SeatProps {
   seat: SeatModel;
   selected?: boolean;
+  seatRadius?: number;
   onSelect?: (seat: SeatModel) => void;
 }
 
@@ -30,7 +31,7 @@ const STATUS_CLASS: Record<SeatStatus, string> = {
   blocked: 'seat--blocked',
 };
 
-function SeatComponent({ seat, selected = false, onSelect }: SeatProps) {
+function SeatComponent({ seat, selected = false, seatRadius = 18, onSelect }: SeatProps) {
   const handleClick = useCallback(() => {
     onSelect?.(seat);
   }, [onSelect, seat]);
@@ -59,7 +60,7 @@ function SeatComponent({ seat, selected = false, onSelect }: SeatProps) {
       data-seat-id={seat.id}
     >
       <title>{seat.label ?? seat.id}</title>
-      <circle className="seat__dot" cx={seat.x} cy={seat.y} r={18} />
+      <circle className="seat__dot" cx={seat.x} cy={seat.y} r={seatRadius} />
     </g>
   );
 }

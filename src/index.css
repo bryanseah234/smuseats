@@ -900,7 +900,7 @@ body::-webkit-scrollbar {
 	}
 
 	.building-grid {
-		grid-template-columns: repeat(2, 1fr);
+		grid-template-columns: repeat(3, 1fr);
 	}
 
 	.building-shortcuts {
@@ -950,7 +950,7 @@ body::-webkit-scrollbar {
 	}
 
 	.building-grid {
-		grid-template-columns: 1fr;
+		grid-template-columns: repeat(2, 1fr);
 		gap: 10px;
 	}
 
@@ -960,6 +960,12 @@ body::-webkit-scrollbar {
 
 	.building-card {
 		padding: 16px 12px;
+	}
+}
+
+@media (max-width: 360px) {
+	.building-grid {
+		grid-template-columns: 1fr;
 	}
 }
 
