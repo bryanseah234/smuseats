@@ -42,7 +42,7 @@ const Home = () => {
 
 
       <section className="how-it-works">
-        <h2 className="section-title">How It Works</h2>
+        <h2 className="section-title">How to use</h2>
         <div className="steps">
           <div className="step">
             <span className="step__icon">🏫</span>
@@ -63,7 +63,7 @@ const Home = () => {
       </section>
 
       <section className="building-shortcuts">
-        <h2 className="section-title">Buildings</h2>
+        <h2 className="section-title">Pick a building</h2>
         <div className="building-grid">
           {BUILDING_ORDER.filter((b) => stats.buildingCounts.has(b)).map((building) => {
             const config = BUILDING_CONFIG[building] ?? { label: building, color: '#6b7280', icon: '🏢' };

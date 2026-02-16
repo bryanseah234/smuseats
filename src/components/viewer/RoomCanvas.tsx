@@ -64,13 +64,17 @@ export function RoomCanvas({
     [onViewportStateChange, viewportState],
   );
 
-  /* Reset loading state when room changes */
+  /* Reset viewport when room changes */
   useEffect(() => {
-    setImageLoaded(false);
     if (!viewportState) {
       setLocalViewport({ zoom: 1, panX: 0, panY: 0 });
     }
   }, [room.id, viewportState]);
+
+  /* Reset loading state only when the room changes */
+  useEffect(() => {
+    setImageLoaded(false);
+  }, [room.id]);
 
   /* Preload the floor-plan image so seats + background appear together */
   useEffect(() => {
