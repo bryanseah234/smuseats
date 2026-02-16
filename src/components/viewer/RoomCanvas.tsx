@@ -49,7 +49,6 @@ export function RoomCanvas({
 }: RoomCanvasProps) {
   const [localViewport, setLocalViewport] = useState<ViewportState>({ zoom: 1, panX: 0, panY: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
   const dragOriginRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
 
   const viewport = viewportState ?? localViewport;
@@ -64,26 +63,11 @@ export function RoomCanvas({
     [onViewportStateChange, viewportState],
   );
 
-  /* Reset viewport when room changes */
   useEffect(() => {
     if (!viewportState) {
       setLocalViewport({ zoom: 1, panX: 0, panY: 0 });
     }
   }, [room.id, viewportState]);
-
-  /* Reset loading state only when the room changes */
-  useEffect(() => {
-    setImageLoaded(false);
-  }, [room.id]);
-
-  /* Preload the floor-plan image so seats + background appear together */
-  useEffect(() => {
-    if (!room.imageUrl) { setImageLoaded(true); return; }
-    const img = new Image();
-    img.onload = () => setImageLoaded(true);
-    img.onerror = () => setImageLoaded(true); // show seats even if image fails
-    img.src = room.imageUrl;
-  }, [room.imageUrl]);
 
   const handlePointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) {
@@ -130,14 +114,6 @@ export function RoomCanvas({
     () => `translate(${viewport.panX}px, ${viewport.panY}px) scale(${viewport.zoom})`,
     [viewport.panX, viewport.panY, viewport.zoom],
   );
-
-  if (!imageLoaded) {
-    return (
-      <div className="room-canvas-viewer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="canvas-loading-spinner" />
-      </div>
-    );
-  }
 
   return (
     <div className="room-canvas-viewer">
