@@ -52,6 +52,7 @@ export function SeatEditorCanvas({
 }: SeatEditorCanvasProps) {
   const [viewport, setViewport] = useState({ zoom: 1, panX: 0, panY: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const [dragSeat, setDragSeat] = useState<{
     id: string;
     x: number;
@@ -75,6 +76,16 @@ export function SeatEditorCanvas({
   useEffect(() => {
     setViewport({ zoom: 1, panX: 0, panY: 0 });
     setDragSeat(null);
+    setImageLoaded(false);
+  }, [imageUrl]);
+
+  /* Preload floor-plan image */
+  useEffect(() => {
+    if (!imageUrl) { setImageLoaded(true); return; }
+    const img = new Image();
+    img.onload = () => setImageLoaded(true);
+    img.onerror = () => setImageLoaded(true);
+    img.src = imageUrl;
   }, [imageUrl]);
 
   /* native wheel handler — React synthetic wheel events are passive */
@@ -250,6 +261,14 @@ export function SeatEditorCanvas({
   ]
     .filter(Boolean)
     .join(' ');
+
+  if (!imageLoaded) {
+    return (
+      <div className="editor-canvas-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="canvas-loading-spinner" />
+      </div>
+    );
+  }
 
   return (
     <div className="editor-canvas-wrapper">

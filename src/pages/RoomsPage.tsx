@@ -50,12 +50,14 @@ const RoomsPage = () => {
     }));
   }, [roomsWithMeta]);
 
-  /* Available floors — only shown when a specific building is selected */
+  /* Available floors — collected from all rooms, or narrowed to selected building */
   const availableFloors = useMemo(() => {
-    if (!selectedBuilding) return [];
     const floors = new Set<string>();
     roomsWithMeta
-      .filter((r) => r.meta.building === selectedBuilding)
+      .filter((r) => {
+        if (selectedBuilding && r.meta.building !== selectedBuilding) return false;
+        return true;
+      })
       .forEach((r) => {
         if (r.meta.floor !== '–') floors.add(r.meta.floor);
       });
@@ -96,7 +98,6 @@ const RoomsPage = () => {
           if (value) params.set(key, value);
           else params.delete(key);
           if (key === 'building') {
-            params.delete('floor');
             params.delete('type');
           }
           if (key === 'floor') params.delete('type');
@@ -155,8 +156,8 @@ const RoomsPage = () => {
           </div>
         </div>
 
-        {/* Floor filter — cascaded from building */}
-        {selectedBuilding && availableFloors.length > 0 && (
+        {/* Floor filter — always shown when floors exist */}
+        {availableFloors.length > 0 && (
           <div className="filter-group">
             <span className="filter-group__label">Floor</span>
             <div className="filter-pills">

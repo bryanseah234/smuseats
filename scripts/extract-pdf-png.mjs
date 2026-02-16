@@ -80,7 +80,7 @@ const main = async () => {
       const outputPath = path.join(outputDir, `${entry.baseName}.png`);
       await fs.writeFile(outputPath, png);
 
-      const id = slugify(`${entry.building}-${entry.baseName}`);
+      const id = slugify(entry.baseName);
       const existing = existingById.get(id);
       const existingSeats = Array.isArray(existing?.seats) ? existing.seats : [];
 
