@@ -35,6 +35,7 @@ export interface ViewportState {
 interface RoomCanvasProps {
   room: RoomConfig;
   selectedSeatId?: string;
+  seatRadius?: number;
   onSeatSelect?: (seat: SeatModel) => void;
   viewportState?: ViewportState;
   onViewportStateChange?: (state: ViewportState) => void;
@@ -43,6 +44,7 @@ interface RoomCanvasProps {
 export function RoomCanvas({
   room,
   selectedSeatId,
+  seatRadius,
   onSeatSelect,
   viewportState,
   onViewportStateChange,
@@ -184,6 +186,7 @@ export function RoomCanvas({
                   key={seat.id}
                   seat={seat}
                   selected={seat.id === selectedSeatId}
+                  seatRadius={seatRadius}
                   onSelect={onSeatSelect}
                 />
               ))}

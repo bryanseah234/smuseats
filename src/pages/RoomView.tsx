@@ -18,6 +18,7 @@ import {
 import { type SeatModel } from '../components/viewer/Seat';
 import registry from '../data/registry.json';
 import { useUrlState, type SeatValue } from '../hooks/useUrlState';
+import { extractMeta } from '../utils/roomMeta';
 
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 4;
@@ -68,6 +69,13 @@ const RoomView = () => {
     if (!registryRoom) return null;
     return toRoomConfig(registryRoom, state.d);
   }, [registryRoom, state.d]);
+
+  /* Seminar rooms get 30% larger seat dots for easier tapping */
+  const seatRadius = useMemo(() => {
+    if (!registryRoom) return 18;
+    const meta = extractMeta(registryRoom.image, registryRoom.seats.length);
+    return meta.type === 'Seminar Room' ? 23 : 18;
+  }, [registryRoom]);
 
   useEffect(() => {
     if (!roomId) return;
@@ -151,6 +159,7 @@ const RoomView = () => {
         <RoomCanvas
           room={room}
           selectedSeatId={selectedSeatId}
+          seatRadius={seatRadius}
           onSeatSelect={handleSeatSelect}
           viewportState={viewport}
           onViewportStateChange={setViewport}
