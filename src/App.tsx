@@ -1,3 +1,13 @@
+/**
+ * App.tsx — Root router.
+ *
+ * Defines every client-side route in the SPA:
+ *   /         → Landing page (Home)
+ *   /rooms    → Filterable room browser (RoomsPage)
+ *   /room/:id → Interactive seat map for a single room (RoomView)
+ *   /edit     → Seat-position editor for contributors (EditSeats)
+ *   *         → Fallback redirect to /
+ */
 import { Navigate, Route, Routes } from 'react-router-dom';
 import Home from './pages/Home';
 import RoomView from './pages/RoomView';

@@ -1,3 +1,12 @@
+/**
+ * RoomView.tsx — Interactive seat map for a single room.
+ *
+ * Loads the room's floor-plan image and seat coordinates from
+ * registry.json, renders them on an interactive canvas (RoomCanvas),
+ * and exposes seat selection + shareable URL state via useUrlState.
+ * Users can click seats, then copy/share the URL so friends can
+ * see the same selection.
+ */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 

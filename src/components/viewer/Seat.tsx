@@ -1,3 +1,11 @@
+/**
+ * Seat.tsx — Single interactive seat dot.
+ *
+ * Renders a coloured circle at (x, y) that responds to clicks and
+ * keyboard events. Colour and cursor change based on the seat's
+ * status: available (clickable), reserved (highlighted), or blocked.
+ * Wrapped in React.memo for performance in rooms with many seats.
+ */
 import { memo, useCallback, type KeyboardEvent } from 'react';
 
 export type SeatStatus = 'available' | 'reserved' | 'blocked';

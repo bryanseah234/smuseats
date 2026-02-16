@@ -1,3 +1,13 @@
+/**
+ * roomMeta.ts — Building configuration and room metadata helpers.
+ *
+ * BUILDING_CONFIG maps each building code (e.g. "LKCSB") to its
+ * display label, brand colour, and icon initial.
+ * BUILDING_ORDER controls the display order on the landing page and
+ * room browser.
+ * extractMeta() parses a room's image path into structured metadata
+ * (building, floor, type, display name, seat count).
+ */
 export interface RoomMeta {
   building: string;
   buildingLabel: string;

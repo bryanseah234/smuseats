@@ -1,147 +1,92 @@
-# SMU Seats Frontend
+# SMU Seats
 
-A Vite + React + TypeScript frontend for **room seat viewing** with **URL‑encoded session state**. This project is designed to be deployable as a static SPA (including on Vercel).
-
-## What the app does
-
-### 1) Room discovery (`/`)
-- Reads room metadata from `src/data/registry.json`
-- Lists available rooms with quick links into the viewer
-
-### 2) Interactive room viewer (`/room/:roomId`)
-
-- Resolves `roomId` from URL params
-- Loads seat coordinates from `src/data/registry.json`
-- Renders a PNG floorplan with an SVG seat overlay
-- Supports:
-  - seat selection
-  - zoom in/out
-  - pan/drag viewport
-- Persists session state in a compressed URL param:
-  - `s` (LZ‑String encoded JSON)
+A Vite + React + TypeScript SPA that lets SMU students **browse classroom floor plans, click their seats, and share a URL** so friends know where they're sitting. Deployable as a static site on Vercel.
 
 ---
 
-## Architecture overview
+## Features
 
-### Route/component flow
+| Route | What it does |
+| ----- | ------------ |
+| `/` | Landing page — hero, how-it-works guide, building shortcut cards |
+| `/rooms` | Filterable room browser (Building → Floor → Type) with shareable query params |
+| `/room/:roomId` | Interactive seat map — click seats, zoom/pan, copy a shareable link |
+| `/edit` | Contributor seat editor — add/move/delete/renumber seats, export JSON |
 
-```mermaid
-flowchart TD
-  A[BrowserRouter in main.tsx] --> B[App Routes]
-  B --> C["/ Home"]
-  B --> D["/room/:roomId"]
-  C --> F[registry.json]
-  D --> F
-  D --> G[RoomView]
-  G --> H[RoomCanvas]
-  H --> I[Seat]
-```
+- Seat selections are compressed into the URL via **lz-string** so links are self-contained
+- **registry.json** is the single source of truth for every room's image path, dimensions, and seat coordinates
 
-### Room viewer data flow
+---
 
-```mermaid
-sequenceDiagram
-  participant U as User
-  participant RV as RoomView
-  participant R as registry.json
-  participant RC as RoomCanvas
-  participant URL as Compressed URL State
+## Project structure
 
-  U->>RV: Open /room/:roomId
-  RV->>R: Find room by id
-  RV->>RV: Load seats from registry.json
-  RV->>RC: Pass room + viewport + selectedSeat
-  U->>RC: Click seat / zoom / pan
-  RC->>RV: onSeatSelect / onViewportStateChange
-  RV->>URL: Update compressed state param `s`
+```text
+src/
+  App.tsx                  # Root router — defines all client-side routes
+  main.tsx                 # Entry point — mounts React inside BrowserRouter
+  index.css                # All application styles (no CSS modules)
+  pages/
+    Home.tsx               # Landing page with hero + building cards
+    RoomsPage.tsx          # Filterable room browser
+    RoomView.tsx           # Interactive seat map viewer
+    EditSeats.tsx          # Seat-position editor for contributors
+  components/
+    viewer/
+      RoomCanvas.tsx       # Zoomable, pannable floor-plan canvas
+      Seat.tsx             # Single interactive seat dot (React.memo)
+    creator/
+      SeatEditorCanvas.tsx # Editor canvas — click-to-place, drag-to-move
+  hooks/
+    useUrlState.ts         # Encodes/decodes seat selection in URL (?s=…)
+  utils/
+    roomMeta.ts            # Building config, display order, metadata parser
+  data/
+    registry.json          # Source of truth — rooms, images, seat coords
+    registry.backup.json   # Backup copy of registry
+scripts/
+  refine-seats.mjs         # Auto-refine seat positions (learns from manual edits)
+public/
+  maps/                    # Floor-plan PNGs (one per room)
+vercel.json                # SPA catch-all rewrite for Vercel deployment
 ```
 
 ---
 
-## Getting started (step‑by‑step)
-
-## Quick start
+## Getting started
 
 ```bash
+# 1. Install dependencies
 npm install
-npm run extract:pdf
-npm run seed:seats
+
+# 2. Start the dev server
 npm run dev
 ```
 
-1) **Install Node.js** (LTS recommended).
+Open the URL Vite prints in your terminal (usually `http://localhost:5173`).
 
-1) **Install dependencies:**
-
-```bash
-npm install
-```
-
-1) **Generate PNGs from PDFs** (one‑time or after PDF updates):
+### Build & preview
 
 ```bash
-npm run extract:pdf
+npm run lint      # ESLint check
+npm run build     # Production build → dist/
+npm run preview   # Serve the built output locally
 ```
-
-This will:
-
-- Convert each one‑page PDF into a PNG in `public/maps` (2000px width)
-- Update `src/data/registry.json` with image dimensions
-
-1) **Seed seat layouts** (optional, uses a curved default layout per building):
-
-```bash
-npm run seed:seats
-```
-
-1) **Start the dev server:**
-
-```bash
-npm run dev
-```
-
-Open the app at the URL Vite prints in your terminal.
-
-## Build & quality checks
-
-```bash
-npm run lint
-npm run build
-```
-
-
-## Operational health checklist
-
-Use this quick check before each deploy:
-
-```bash
-npm install
-npm run extract:pdf
-npm run lint
-npm run build
-npm run preview -- --host 0.0.0.0 --port 4174
-```
-
-Then verify:
-
-- `/` returns 200
-- `/room/lobby` returns 200 (SPA fallback)
-- `/assets/...js` returns 200 (static file is **not** rewritten to HTML)
 
 ---
 
 ## Deploying to Vercel
 
-This repo is configured as a Vite SPA and includes a filesystem-aware fallback in `vercel.json` so static assets are served normally while client-side routes (`/room/:roomId`) still resolve to `index.html` on direct refresh.
+The repo includes a `vercel.json` with a catch-all rewrite so all client-side routes (`/rooms`, `/room/:id`, `/edit`, etc.) resolve to `index.html` on direct refresh while static assets are served normally.
 
 ### Vercel project settings
 
-- Framework preset: **Vite**
-- Build command: `npm run build`
-- Output directory: `dist`
+| Setting | Value |
+| ------- | ----- |
+| Framework preset | **Vite** |
+| Build command | `npm run build` |
+| Output directory | `dist` |
 
-### One-click deploy flow
+### One-click deploy
 
 1. Import the repo into Vercel
 2. Keep the defaults above
@@ -149,7 +94,71 @@ This repo is configured as a Vite SPA and includes a filesystem-aware fallback i
 
 ---
 
-## Current limitations
+## Seat editor (`/edit`)
 
-- Seat coordinates are seeded or manually edited in `src/data/registry.json` (no in-app editor).
-- Ensure every PDF has a matching PNG in `public/maps` and a registry entry.
+The built-in editor at `/edit` lets contributors adjust seat positions visually:
+
+- **Click** on the floor plan to place a new seat
+- **Drag** an existing seat to reposition it
+- **Right-click** or press **Delete/Backspace** to remove a seat
+- **Renumber** re-labels all seats sequentially
+- **Clear All** removes every seat in the room
+- **Undo** (Ctrl+Z) reverts the last action
+- **Export JSON** copies the seat array to clipboard — paste it into `registry.json`
+
+### Auto-refinement script
+
+`scripts/refine-seats.mjs` can automatically refine seat positions by learning from rooms you've already manually edited:
+
+```bash
+node scripts/refine-seats.mjs
+```
+
+It uses connected-component detection on the floor-plan PNGs, applies a 50 px merge distance to eliminate clusters, and skips rooms that already match their expected capacity.
+
+---
+
+## Architecture
+
+### Route / component flow
+
+```mermaid
+flowchart TD
+  A[BrowserRouter — main.tsx] --> B[App Routes]
+  B --> C["/ Home"]
+  B --> D["/rooms RoomsPage"]
+  B --> E["/room/:roomId RoomView"]
+  B --> F["/edit EditSeats"]
+  E --> G[RoomCanvas]
+  G --> H[Seat]
+  F --> I[SeatEditorCanvas]
+  C & D & E & F --> R[registry.json]
+```
+
+### Seat selection data flow
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant RV as RoomView
+  participant R as registry.json
+  participant RC as RoomCanvas
+  participant URL as Compressed URL (?s=…)
+
+  U->>RV: Open /room/:roomId
+  RV->>R: Look up room by ID
+  RV->>RC: Render floor plan + seats
+  U->>RC: Click seat / zoom / pan
+  RC->>RV: onSeatSelect / onViewportChange
+  RV->>URL: Encode selection → lz-string → ?s=…
+  U->>U: Copy URL → share with friends
+```
+
+---
+
+## Contributing
+
+1. Fork the repo and create a feature branch
+2. Run `npm run lint` before committing
+3. If adding or editing seat positions, use the `/edit` page and export the JSON
+4. Open a PR with a clear description of what changed
