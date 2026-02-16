@@ -1021,16 +1021,6 @@ body::-webkit-scrollbar {
 	border-color: var(--color-primary);
 }
 
-.edit-toolbar__count {
-	font-size: 0.82rem;
-	font-weight: 700;
-	color: var(--color-primary);
-	background: #eff6ff;
-	padding: 5px 14px;
-	border-radius: var(--radius-full);
-	white-space: nowrap;
-}
-
 .edit-toolbar__actions {
 	display: flex;
 	align-items: center;
@@ -1039,7 +1029,7 @@ body::-webkit-scrollbar {
 	flex-wrap: wrap;
 }
 
-.edit-toolbar__actions .btn {
+.edit-toolbar .btn {
 	padding: 7px 14px;
 	font-size: 0.78rem;
 }
