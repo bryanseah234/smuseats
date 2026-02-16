@@ -1034,6 +1034,12 @@ body::-webkit-scrollbar {
 	font-size: 0.78rem;
 }
 
+/* ---- floor-plan background filter (tunable placeholder) ---- */
+
+.floor-plan-bg {
+	filter: contrast(1.0) brightness(1.0);
+}
+
 /* ---- canvas ---- */
 
 .editor-canvas-wrapper {

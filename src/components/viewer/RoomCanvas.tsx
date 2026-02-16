@@ -149,6 +149,7 @@ export function RoomCanvas({
           <div style={{ position: 'relative', width: '100%', height: '100%' }}>
             {room.imageUrl ? (
               <img
+                className="floor-plan-bg"
                 src={room.imageUrl}
                 alt={room.name ?? room.id}
                 draggable={false}
