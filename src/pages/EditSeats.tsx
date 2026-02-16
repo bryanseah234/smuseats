@@ -1,3 +1,13 @@
+/**
+ * EditSeats.tsx — Seat-position editor (contributor tool).
+ *
+ * Lets contributors visually add, move, delete, renumber, and
+ * export seat coordinates for any room. Changes are exported as
+ * JSON that can be pasted into registry.json. Supports undo,
+ * keyboard shortcuts, and drag-to-move.
+ *
+ * Route: /edit
+ */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 

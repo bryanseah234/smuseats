@@ -1,3 +1,11 @@
+/**
+ * useUrlState.ts — Shareable seat-selection state via URL.
+ *
+ * Encodes the selected room ID and chosen seats into a compact,
+ * lz-string-compressed query parameter (?s=…). When the page loads
+ * the hook reads the URL, decompresses the state, and returns the
+ * seat map so the room view can highlight the correct seats.
+ */
 import { useCallback, useMemo, useState } from 'react';
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 

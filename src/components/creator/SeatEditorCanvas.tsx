@@ -1,3 +1,11 @@
+/**
+ * SeatEditorCanvas.tsx — Interactive canvas for the seat editor.
+ *
+ * Similar to RoomCanvas but adds seat *creation* (click to place),
+ * *drag-to-move*, and *delete* modes. The parent (EditSeats.tsx)
+ * manages the seat array; this component only handles rendering
+ * and pointer interactions, then calls back with new positions.
+ */
 import {
   useCallback,
   useEffect,

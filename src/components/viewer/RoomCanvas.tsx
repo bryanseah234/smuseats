@@ -1,3 +1,11 @@
+/**
+ * RoomCanvas.tsx — Zoomable, pannable floor-plan canvas.
+ *
+ * Renders the room's background image and overlays interactive Seat
+ * dots. Supports pinch-to-zoom, scroll-to-zoom, drag-to-pan, and
+ * programmatic zoom buttons. Exposes viewport state (offset + scale)
+ * so the parent can synchronise UI controls.
+ */
 import {
   useCallback,
   useEffect,

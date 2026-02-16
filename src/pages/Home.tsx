@@ -1,3 +1,11 @@
+/**
+ * Home.tsx — Landing page.
+ *
+ * Displays a hero banner, a "How It Works" guide, and building
+ * shortcut cards that link directly to the rooms browser filtered
+ * by building. Stats (room count, building count, seat count) are
+ * derived at render-time from registry.json.
+ */
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -31,23 +39,7 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="stats-strip">
-        <h2 className="section-title">We have</h2>
-        <div className="stats-strip__cards">
-          <div className="stat-card">
-            <span className="stat-card__number">{stats.totalRooms}</span>
-            <span className="stat-card__label">Rooms</span>
-          </div>
-          <div className="stat-card">
-            <span className="stat-card__number">{stats.buildingCounts.size}</span>
-            <span className="stat-card__label">Buildings</span>
-          </div>
-          <div className="stat-card">
-            <span className="stat-card__number">{stats.totalSeats.toLocaleString()}+</span>
-            <span className="stat-card__label">Seats</span>
-          </div>
-        </div>
-      </section>
+
 
       <section className="how-it-works">
         <h2 className="section-title">How It Works</h2>

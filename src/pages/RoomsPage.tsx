@@ -1,3 +1,11 @@
+/**
+ * RoomsPage.tsx — Filterable room browser.
+ *
+ * Renders a cascading filter bar (Building → Floor → Type) and a
+ * grid of room cards. All filter state is kept in the URL query
+ * string so links are shareable. Room metadata (building, floor,
+ * type, seat count) is derived from registry.json via roomMeta.ts.
+ */
 import { useCallback, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 
@@ -173,8 +181,8 @@ const RoomsPage = () => {
           </div>
         )}
 
-        {/* Type filter — only when multiple types exist */}
-        {availableTypes.length > 1 && (
+        {/* Type filter — always shown when types exist */}
+        {availableTypes.length > 0 && (
           <div className="filter-group">
             <span className="filter-group__label">Type</span>
             <div className="filter-pills">
