@@ -312,8 +312,6 @@ const EditSeats = () => {
           </button>
         </div>
 
-        <span className="edit-toolbar__count">{room.seats.length} seats</span>
-
         <div className="edit-toolbar__actions">
           <button
             className={`btn ${addMode ? 'btn--primary' : 'btn--secondary'}`}
