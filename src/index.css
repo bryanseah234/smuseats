@@ -1037,7 +1037,7 @@ body::-webkit-scrollbar {
 /* ---- floor-plan background filter (darken lines / text) ---- */
 
 .floor-plan-bg {
-	filter: contrast(2.0) brightness(1.1);
+	filter: contrast(1.4) brightness(1.1);
 }
 
 /* ---- canvas ---- */
