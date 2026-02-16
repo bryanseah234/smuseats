@@ -41,6 +41,11 @@ interface RoomCanvasProps {
   onViewportStateChange?: (state: ViewportState) => void;
 }
 
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 5;
+const WHEEL_ZOOM_SPEED = 0.001;
+const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi);
+
 export function RoomCanvas({
   room,
   selectedSeatId,
@@ -52,6 +57,12 @@ export function RoomCanvas({
   const [localViewport, setLocalViewport] = useState<ViewportState>({ zoom: 1, panX: 0, panY: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dragOriginRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
+
+  /** Track active pointers for pinch-to-zoom */
+  const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
+  const pinchRef = useRef<{ dist: number; zoom: number; midX: number; midY: number } | null>(null);
+
+  const frameRef = useRef<HTMLDivElement>(null);
 
   const viewport = viewportState ?? localViewport;
 
@@ -71,14 +82,29 @@ export function RoomCanvas({
     }
   }, [room.id, viewportState]);
 
+  /* ---------- Drag-to-pan ---------- */
+
   const handlePointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
-    if (event.button !== 0) {
+    // Track pointer for pinch detection
+    pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (pointersRef.current.size === 2) {
+      // Two fingers down → start pinch, cancel any single-pointer drag
+      setIsDragging(false);
+      dragOriginRef.current = null;
+
+      const pts = Array.from(pointersRef.current.values());
+      const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+      const midX = (pts[0].x + pts[1].x) / 2;
+      const midY = (pts[0].y + pts[1].y) / 2;
+      pinchRef.current = { dist, zoom: viewport.zoom, midX, midY };
       return;
     }
+
+    if (event.button !== 0) return;
     const target = event.target as HTMLElement;
-    if (target.closest('.seat')) {
-      return;
-    }
+    if (target.closest('.seat')) return;
+
     setIsDragging(true);
     dragOriginRef.current = {
       x: event.clientX,
@@ -87,12 +113,40 @@ export function RoomCanvas({
       panY: viewport.panY,
     };
     event.currentTarget.setPointerCapture(event.pointerId);
-  }, [viewport.panX, viewport.panY]);
+  }, [viewport.panX, viewport.panY, viewport.zoom]);
 
   const handlePointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
-    if (!isDragging || !dragOriginRef.current) {
+    // Update tracked pointer position
+    if (pointersRef.current.has(event.pointerId)) {
+      pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    }
+
+    // Pinch-to-zoom (two pointers)
+    if (pointersRef.current.size === 2 && pinchRef.current) {
+      const pts = Array.from(pointersRef.current.values());
+      const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+      const scale = dist / pinchRef.current.dist;
+      const newZoom = clamp(pinchRef.current.zoom * scale, MIN_ZOOM, MAX_ZOOM);
+
+      // Zoom toward the midpoint between the two fingers
+      const rect = frameRef.current?.getBoundingClientRect();
+      if (rect) {
+        const midX = (pts[0].x + pts[1].x) / 2;
+        const midY = (pts[0].y + pts[1].y) / 2;
+        const cx = midX - rect.left;
+        const cy = midY - rect.top;
+        const zoomRatio = newZoom / viewport.zoom;
+        setViewport({
+          zoom: newZoom,
+          panX: cx - zoomRatio * (cx - viewport.panX),
+          panY: cy - zoomRatio * (cy - viewport.panY),
+        });
+      }
       return;
     }
+
+    // Single-pointer drag-to-pan
+    if (!isDragging || !dragOriginRef.current) return;
 
     const deltaX = event.clientX - dragOriginRef.current.x;
     const deltaY = event.clientY - dragOriginRef.current.y;
@@ -105,21 +159,71 @@ export function RoomCanvas({
   }, [isDragging, setViewport, viewport]);
 
   const endDrag = useCallback((event?: ReactPointerEvent<HTMLDivElement>) => {
-    if (event && event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
+    if (event) {
+      pointersRef.current.delete(event.pointerId);
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+    }
+    // Reset pinch when fewer than 2 pointers remain
+    if (pointersRef.current.size < 2) {
+      pinchRef.current = null;
     }
     setIsDragging(false);
     dragOriginRef.current = null;
   }, []);
+
+  /* ---------- Scroll-wheel zoom (scoped to canvas only) ---------- */
+
+  useEffect(() => {
+    const el = frameRef.current;
+    if (!el) return;
+
+    // Must be a native listener with { passive: false } to preventDefault
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const rect = el.getBoundingClientRect();
+      const cx = e.clientX - rect.left;
+      const cy = e.clientY - rect.top;
+
+      // Read current viewport from the ref-stable getter
+      const cur = viewportState ?? localViewport;
+      const delta = -e.deltaY * WHEEL_ZOOM_SPEED;
+      const newZoom = clamp(cur.zoom + delta * cur.zoom, MIN_ZOOM, MAX_ZOOM);
+      const zoomRatio = newZoom / cur.zoom;
+
+      const next: ViewportState = {
+        zoom: newZoom,
+        panX: cx - zoomRatio * (cx - cur.panX),
+        panY: cy - zoomRatio * (cy - cur.panY),
+      };
+
+      if (viewportState) {
+        onViewportStateChange?.(next);
+      } else {
+        setLocalViewport(next);
+        onViewportStateChange?.(next);
+      }
+    };
+
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [viewportState, localViewport, onViewportStateChange]);
 
   const transform = useMemo(
     () => `translate(${viewport.panX}px, ${viewport.panY}px) scale(${viewport.zoom})`,
     [viewport.panX, viewport.panY, viewport.zoom],
   );
 
+  /** Block native image drag */
+  const blockDrag = useCallback((e: React.DragEvent) => e.preventDefault(), []);
+
   return (
     <div className="room-canvas-viewer">
       <div
+        ref={frameRef}
         className="room-canvas-frame"
         style={{
           position: 'relative',
@@ -133,6 +237,7 @@ export function RoomCanvas({
         onPointerMove={handlePointerMove}
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
+        onDragStart={blockDrag}
       >
         <div
           className="room-canvas-content"

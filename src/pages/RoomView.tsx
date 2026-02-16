@@ -20,9 +20,9 @@ import registry from '../data/registry.json';
 import { useUrlState, type SeatValue } from '../hooks/useUrlState';
 import { extractMeta } from '../utils/roomMeta';
 
-const MIN_ZOOM = 1;
-const MAX_ZOOM = 4;
-const ZOOM_STEP = 0.1;
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 5;
+const ZOOM_STEP = 0.15;
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
 type RegistryRoom = (typeof registry.rooms)[number];
