@@ -274,6 +274,7 @@ export function SeatEditorCanvas({
             style={{ position: 'relative', width: '100%', height: '100%' }}
           >
             <img
+              className="floor-plan-bg"
               src={imageUrl}
               alt="Floor plan"
               draggable={false}
