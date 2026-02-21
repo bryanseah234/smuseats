@@ -697,6 +697,11 @@ body::-webkit-scrollbar {
 	box-shadow: var(--shadow-sm);
 }
 
+.banner-btn-undo svg {
+	flex-shrink: 0;
+	display: block;
+}
+
 .btn {
 	display: inline-flex;
 	align-items: center;
