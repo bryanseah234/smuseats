@@ -262,6 +262,7 @@ const RoomView = () => {
                     value={name ?? ''}
                     placeholder="Add name…"
                     onClick={(e) => e.stopPropagation()}
+                    onBlur={() => window.scrollTo(0, 0)}
                     onChange={(e) => {
                       const v = e.target.value;
                       setSeatValue(seatId, v.length > 0 ? v : 1);
