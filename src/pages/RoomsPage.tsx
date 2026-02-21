@@ -114,131 +114,142 @@ const RoomsPage = () => {
   }, [setSearchParams]);
 
   return (
-    <div className="rooms-page">
-      <header className="rooms-header">
-        <div className="rooms-header__top">
-          <Link to="/" className="back-link">← Home</Link>
-        </div>
-        <h1>Browse Rooms</h1>
-        <p>
-          Showing {filtered.length} of {roomsWithMeta.length} rooms
-          {(selectedBuilding || selectedFloor || selectedType) && (
-            <button type="button" className="clear-filters" onClick={clearFilters}>
-              Clear filters
-            </button>
-          )}
-        </p>
-      </header>
-
-      <div className="filter-bar">
-        {/* Building filter */}
-        <div className="filter-group">
-          <span className="filter-group__label">Building</span>
-          <div className="filter-pills">
-            <button
-              type="button"
-              className={`pill ${!selectedBuilding ? 'pill--active' : ''}`}
-              onClick={() => setFilter('building', null)}
-            >
-              All
-            </button>
-            {buildings.map(({ key, config, count }) => (
-              <button
-                key={key}
-                type="button"
-                className={`pill ${selectedBuilding === key ? 'pill--active' : ''}`}
-                onClick={() => setFilter('building', selectedBuilding === key ? null : key)}
-              >
-                {config.label}
-                <span className="pill__count">{count}</span>
+    <>
+      <header className="rooms-banner-wrapper">
+        <div className="rooms-banner-inner">
+          <div className="room-banner__left">
+            <Link to="/" className="banner-nav">
+              <span className="banner-nav__icon">←</span>
+              <span>Home</span>
+            </Link>
+          </div>
+          <div className="room-banner__center">
+            <h1>Browse Rooms</h1>
+          </div>
+          <div className="room-banner__right">
+            <span className="rooms-stats">
+              {filtered.length} / {roomsWithMeta.length} rooms
+            </span>
+            {(selectedBuilding || selectedFloor || selectedType) && (
+              <button type="button" className="btn btn--secondary" style={{ padding: '6px 12px', fontSize: '0.8rem', marginLeft: '12px' }} onClick={clearFilters}>
+                Clear filters
               </button>
+            )}
+          </div>
+        </div>
+      </header>
+      <div className="rooms-page" style={{ minHeight: 'calc(100vh - 72px)', paddingTop: '24px' }}>
+
+        <div className="filter-bar">
+          {/* Building filter */}
+          <div className="filter-group">
+            <span className="filter-group__label">Building</span>
+            <div className="filter-pills">
+              <button
+                type="button"
+                className={`pill ${!selectedBuilding ? 'pill--active' : ''}`}
+                onClick={() => setFilter('building', null)}
+              >
+                All
+              </button>
+              {buildings.map(({ key, config, count }) => (
+                <button
+                  key={key}
+                  type="button"
+                  className={`pill ${selectedBuilding === key ? 'pill--active' : ''}`}
+                  onClick={() => setFilter('building', selectedBuilding === key ? null : key)}
+                >
+                  {config.label}
+                  <span className="pill__count">{count}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Floor filter — always shown when floors exist */}
+          {availableFloors.length > 0 && (
+            <div className="filter-group">
+              <span className="filter-group__label">Floor</span>
+              <div className="filter-pills">
+                <button
+                  type="button"
+                  className={`pill ${!selectedFloor ? 'pill--active' : ''}`}
+                  onClick={() => setFilter('floor', null)}
+                >
+                  All floors
+                </button>
+                {availableFloors.map((f) => (
+                  <button
+                    key={f}
+                    type="button"
+                    className={`pill ${selectedFloor === f ? 'pill--active' : ''}`}
+                    onClick={() => setFilter('floor', selectedFloor === f ? null : f)}
+                  >
+                    {f.startsWith('B') ? `Basement ${f.slice(1)}` : `Level ${f}`}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Type filter — always shown when types exist */}
+          {availableTypes.length > 0 && (
+            <div className="filter-group">
+              <span className="filter-group__label">Type</span>
+              <div className="filter-pills">
+                <button
+                  type="button"
+                  className={`pill ${!selectedType ? 'pill--active' : ''}`}
+                  onClick={() => setFilter('type', null)}
+                >
+                  All types
+                </button>
+                {availableTypes.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    className={`pill ${selectedType === t ? 'pill--active' : ''}`}
+                    onClick={() => setFilter('type', selectedType === t ? null : t)}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {filtered.length > 0 ? (
+          <div className="room-cards-grid">
+            {filtered.map((room) => (
+              <Link key={room.id} to={`/room/${room.id}`} className="room-card">
+                <div className="room-card__accent" style={{ background: room.meta.buildingColor }} />
+                <div className="room-card__body">
+                  <h3 className="room-card__title">{room.meta.displayName}</h3>
+                  <div className="room-card__badges">
+                    {room.meta.floor !== '–' && (
+                      <span className="badge">
+                        {room.meta.floor.startsWith('B') ? room.meta.floor : `L${room.meta.floor}`}
+                      </span>
+                    )}
+                    <span className="badge">{room.meta.type}</span>
+                    <span className="badge badge--muted">{room.meta.seatCount} seats</span>
+                  </div>
+                </div>
+                <span className="room-card__arrow">→</span>
+              </Link>
             ))}
           </div>
-        </div>
-
-        {/* Floor filter — always shown when floors exist */}
-        {availableFloors.length > 0 && (
-          <div className="filter-group">
-            <span className="filter-group__label">Floor</span>
-            <div className="filter-pills">
-              <button
-                type="button"
-                className={`pill ${!selectedFloor ? 'pill--active' : ''}`}
-                onClick={() => setFilter('floor', null)}
-              >
-                All floors
-              </button>
-              {availableFloors.map((f) => (
-                <button
-                  key={f}
-                  type="button"
-                  className={`pill ${selectedFloor === f ? 'pill--active' : ''}`}
-                  onClick={() => setFilter('floor', selectedFloor === f ? null : f)}
-                >
-                  {f.startsWith('B') ? `Basement ${f.slice(1)}` : `Level ${f}`}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Type filter — always shown when types exist */}
-        {availableTypes.length > 0 && (
-          <div className="filter-group">
-            <span className="filter-group__label">Type</span>
-            <div className="filter-pills">
-              <button
-                type="button"
-                className={`pill ${!selectedType ? 'pill--active' : ''}`}
-                onClick={() => setFilter('type', null)}
-              >
-                All types
-              </button>
-              {availableTypes.map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  className={`pill ${selectedType === t ? 'pill--active' : ''}`}
-                  onClick={() => setFilter('type', selectedType === t ? null : t)}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
+        ) : (
+          <div className="empty-state">
+            <p>No rooms match your filters.</p>
+            <button type="button" className="btn btn--primary" onClick={clearFilters}>
+              Clear filters
+            </button>
           </div>
         )}
       </div>
-
-      {filtered.length > 0 ? (
-        <div className="room-cards-grid">
-          {filtered.map((room) => (
-            <Link key={room.id} to={`/room/${room.id}`} className="room-card">
-              <div className="room-card__accent" style={{ background: room.meta.buildingColor }} />
-              <div className="room-card__body">
-                <h3 className="room-card__title">{room.meta.displayName}</h3>
-                <div className="room-card__badges">
-                  {room.meta.floor !== '–' && (
-                    <span className="badge">
-                      {room.meta.floor.startsWith('B') ? room.meta.floor : `L${room.meta.floor}`}
-                    </span>
-                  )}
-                  <span className="badge">{room.meta.type}</span>
-                  <span className="badge badge--muted">{room.meta.seatCount} seats</span>
-                </div>
-              </div>
-              <span className="room-card__arrow">→</span>
-            </Link>
-          ))}
-        </div>
-      ) : (
-        <div className="empty-state">
-          <p>No rooms match your filters.</p>
-          <button type="button" className="btn btn--primary" onClick={clearFilters}>
-            Clear filters
-          </button>
-        </div>
-      )}
-    </div>
+    </>
   );
 };
 
