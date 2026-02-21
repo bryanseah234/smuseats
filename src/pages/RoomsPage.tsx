@@ -130,11 +130,18 @@ const RoomsPage = () => {
             <span className="rooms-stats">
               {filtered.length} / {roomsWithMeta.length} rooms
             </span>
-            {(selectedBuilding || selectedFloor || selectedType) && (
-              <button type="button" className="btn btn--secondary" style={{ padding: '6px 12px', fontSize: '0.8rem', marginLeft: '12px' }} onClick={clearFilters}>
-                Clear filters
-              </button>
-            )}
+            <button
+              type="button"
+              className="btn btn--secondary banner-btn-undo"
+              title="Clear all filters"
+              disabled={!(selectedBuilding || selectedFloor || selectedType)}
+              onClick={clearFilters}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 7v6h6" />
+                <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3l-3 2.7" />
+              </svg>
+            </button>
           </div>
         </div>
       </header>
