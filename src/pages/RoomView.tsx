@@ -173,7 +173,7 @@ const RoomView = () => {
         </div>
         <div className="room-banner__right">
           <button type="button" className="btn btn--secondary banner-btn-reset" onClick={zoomReset}>
-            Reset View
+            Reset
           </button>
           <button type="button" className="btn btn--primary banner-btn-copy" onClick={handleCopyLink}>
             {copied ? (
@@ -186,7 +186,7 @@ const RoomView = () => {
                 <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
               </svg>
             )}
-            <span>{copied ? 'Copied!' : 'Copy to Share'}</span>
+            <span>{copied ? 'Copied!' : 'Share'}</span>
           </button>
         </div>
       </div>
