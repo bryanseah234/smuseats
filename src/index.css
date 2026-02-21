@@ -592,7 +592,7 @@ body::-webkit-scrollbar {
 /* ---------- Top Overlay Banner ---------- */
 
 .room-banner {
-	position: absolute;
+	position: fixed;
 	top: 0;
 	left: 0;
 	right: 0;
@@ -679,6 +679,18 @@ body::-webkit-scrollbar {
 	padding: 8px 24px;
 	font-size: 0.85rem;
 	box-shadow: var(--shadow-md);
+}
+
+.banner-btn-undo {
+	padding: 8px;
+	border-radius: 50%;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin-left: 12px;
+	height: 36px;
+	width: 36px;
+	box-shadow: var(--shadow-sm);
 }
 
 .btn {
@@ -997,6 +1009,8 @@ body::-webkit-scrollbar {
 	flex-direction: column;
 	min-height: 0;
 	position: relative;
+	margin-top: 72px;
+	/* Push below the fixed banner */
 }
 
 /* Loading spinner shown while floor-plan PNG is downloading */
@@ -1172,20 +1186,79 @@ body::-webkit-scrollbar {
 		font-size: 1rem;
 	}
 
-	.banner-btn-copy span {
+	.banner-nav span:not(.banner-nav__icon) {
 		display: none;
+	}
+
+	.rooms-stats {
+		display: none;
+	}
+
+	.rooms-banner-inner {
+		padding: 0 12px;
+		flex-wrap: nowrap;
+	}
+
+	.rooms-banner-inner .room-banner__right .btn {
+		font-size: 0.75rem !important;
+		padding: 6px 10px !important;
+	}
+
+	.banner-btn-copy {
+		padding: 8px 12px;
+		font-size: 0 !important;
 	}
 
 	.banner-btn-copy::before {
 		content: 'Share';
+		font-size: 0.75rem;
 	}
 
 	.banner-btn-reset {
 		display: none;
 	}
 
+	/* Sidebar to Bottom-Sheet Conversion */
 	.collapsible-sidebar {
-		top: 76px;
+		top: auto;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		width: 100%;
+		max-width: 100%;
+		max-height: 45vh;
+		border-radius: 20px 20px 0 0;
+		transform: translateY(calc(100% + 16px));
+		/* Slide down off-screen */
+	}
+
+	.collapsible-sidebar.open {
+		transform: translateY(0);
+		/* Slide up to dock at bottom */
+	}
+
+	.sidebar-toggle {
+		top: -42px;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 56px;
+		height: 32px;
+		background: #ffffff;
+		border: 1px solid rgba(0, 0, 0, 0.05);
+		border-bottom: none;
+		border-radius: 16px 16px 0 0;
+		box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+
+		/* Rotate the arrow to point up/down instead of left/right */
+	}
+
+	.sidebar-toggle svg {
+		transform: rotate(90deg);
+	}
+
+	.collapsible-sidebar.open .sidebar-toggle svg {
+		transform: rotate(-90deg);
+		/* point down when open */
 	}
 
 	.filter-group {
@@ -1218,6 +1291,14 @@ body::-webkit-scrollbar {
 
 	.building-card {
 		padding: 16px 12px;
+	}
+
+	.banner-btn-copy {
+		padding: 8px 10px;
+	}
+
+	.banner-btn-copy::before {
+		display: none;
 	}
 }
 
