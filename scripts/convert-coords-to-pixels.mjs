@@ -11,6 +11,7 @@ import path from 'node:path';
 
 const ROOT = process.cwd();
 const registryPath = path.join(ROOT, 'src', 'data', 'registry.json');
+const APPLY = process.argv.includes('--apply');
 
 const main = async () => {
   const raw = await fs.readFile(registryPath, 'utf-8');
@@ -27,6 +28,12 @@ const main = async () => {
         y: Math.round((seat.y * room.height) / 100 * 100) / 100,
       };
     });
+  }
+
+  if (!APPLY) {
+    console.log(`DRY RUN — would convert ${totalSeats} seats across ${registry.rooms.length} rooms.`);
+    console.log('Re-run with --apply to write changes to src/data/registry.json.');
+    return;
   }
 
   await fs.writeFile(registryPath, `${JSON.stringify(registry, null, 2)}\n`, 'utf-8');

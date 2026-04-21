@@ -19,6 +19,7 @@ import {
   type ViewportState,
 } from '../components/viewer/RoomCanvas';
 import { type SeatModel } from '../components/viewer/Seat';
+import { SelectedSeatsSidebar } from '../components/viewer/SelectedSeatsSidebar';
 
 type RegistryRoom = (typeof registry.rooms)[number];
 
@@ -48,7 +49,7 @@ const toRoomConfig = (room: RegistryRoom, seatData: Record<string, SeatValue>): 
 const RoomView = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
-  const { state, setRoomId, setSeatValue, setSeatData } = useUrlState();
+  const { state, isUrlWriteLimited, setRoomId, setSeatValue, setSeatData } = useUrlState();
   const [selectedSeatId, setSelectedSeatId] = useState<string | undefined>();
   const [copied, setCopied] = useState(false);
 
@@ -191,105 +192,16 @@ const RoomView = () => {
         </div>
       </div>
 
-      {/* Collapsible Sidebar Overlay */}
-      <div className={`collapsible-sidebar ${isSidebarOpen ? 'open' : ''}`}>
-        {/* Toggle Tab */}
-        <button
-          className="sidebar-toggle"
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          title={isSidebarOpen ? "Hide selected seats" : "Show selected seats"}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            style={{ transition: 'transform 0.3s' }}
-            transform={isSidebarOpen ? "rotate(180)" : ""}
-          >
-            <polyline points="15 18 9 12 15 6"></polyline>
-          </svg>
-          {!isSidebarOpen && selectedEntries.length > 0 && (
-            <span className="sidebar-toggle__badge" style={{
-              position: 'absolute',
-              top: '-6px',
-              right: '-6px',
-              background: '#ef4444',
-              color: '#fff',
-              fontSize: '10px',
-              fontWeight: 700,
-              padding: '2px 6px',
-              borderRadius: '10px'
-            }}>{selectedEntries.length}</span>
-          )}
-        </button>
-
-        {/* Sidebar Content */}
-        <div className="sidebar-content">
-          <div className="reserved-list">
-            <div className="reserved-list__header">
-              <span>Selected ({selectedEntries.length})</span>
-              <button
-                type="button"
-                className="clear-all-btn"
-                onClick={handleClearAll}
-                disabled={selectedEntries.length === 0}
-              >
-                Clear All
-              </button>
-            </div>
-
-            {selectedEntries.length === 0 ? (
-              <div className="reserved-list__empty">
-                No seats marked yet. Click a seat on the map to get started.
-              </div>
-            ) : (
-              selectedEntries.map(({ seatId, name }) => (
-                <div
-                  key={seatId}
-                  className={`reserved-list__item ${selectedSeatId === seatId ? 'reserved-list__item--active' : ''}`}
-                  onClick={() => setSelectedSeatId(seatId)}
-                >
-                  <span className="reserved-list__dot" />
-                  <span className="reserved-list__seat-id">#{seatId}</span>
-                  <input
-                    className="reserved-list__name-input"
-                    value={name ?? ''}
-                    placeholder="Add name…"
-                    onClick={(e) => e.stopPropagation()}
-                    onBlur={() => window.scrollTo(0, 0)}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      setSeatValue(seatId, v.length > 0 ? v : 1);
-                    }}
-                  />
-                  <button
-                    type="button"
-                    className="reserved-list__remove"
-                    title="Remove seat"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSeatValue(seatId, undefined);
-                      if (selectedSeatId === seatId) setSelectedSeatId(undefined);
-                    }}
-                  >
-                    ×
-                  </button>
-                </div>
-              ))
-            )}
-
-            <div className="room-view-footer sidebar-footer">
-              <span>State is saved in the URL</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <SelectedSeatsSidebar
+        isOpen={isSidebarOpen}
+        selectedSeatId={selectedSeatId}
+        selectedEntries={selectedEntries}
+        isUrlWriteLimited={isUrlWriteLimited}
+        onToggleOpen={() => setIsSidebarOpen((open) => !open)}
+        onClearAll={handleClearAll}
+        onSelectSeat={setSelectedSeatId}
+        onSetSeatValue={setSeatValue}
+      />
     </div>
   );
 };

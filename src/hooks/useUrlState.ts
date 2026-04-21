@@ -10,6 +10,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 
 const QUERY_PARAM_KEY = 's';
+const MAX_ENCODED_STATE_LENGTH = 1800;
 
 export type SeatValue = 1 | string;
 export type SeatDataMap = Record<string, SeatValue>;
@@ -78,20 +79,27 @@ const readSessionFromUrl = (): SessionState => {
   return decodeSessionState(params.get(QUERY_PARAM_KEY));
 };
 
-const writeSessionToUrl = (state: SessionState): void => {
+const writeSessionToUrl = (state: SessionState): boolean => {
   if (typeof window === 'undefined') {
-    return;
+    return true;
+  }
+
+  const encoded = encodeSessionState(state);
+  if (encoded.length > MAX_ENCODED_STATE_LENGTH) {
+    return false;
   }
 
   const params = new URLSearchParams(window.location.search);
-  params.set(QUERY_PARAM_KEY, encodeSessionState(state));
+  params.set(QUERY_PARAM_KEY, encoded);
   const query = params.toString();
   const nextUrl = `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`;
   window.history.replaceState(window.history.state, '', nextUrl);
+  return true;
 };
 
 export interface UseUrlStateResult {
   state: SessionState;
+  isUrlWriteLimited: boolean;
   setRoomId: (roomId: string) => void;
   setSeatData: (seatData: SeatDataMap) => void;
   setSeatValue: (seatId: string, value: SeatValue | undefined) => void;
@@ -100,11 +108,13 @@ export interface UseUrlStateResult {
 
 export const useUrlState = (): UseUrlStateResult => {
   const [state, setState] = useState<SessionState>(() => readSessionFromUrl());
+  const [isUrlWriteLimited, setIsUrlWriteLimited] = useState(false);
 
   const updateState = useCallback((updater: (prev: SessionState) => SessionState) => {
     setState((prev) => {
       const next = updater(prev);
-      writeSessionToUrl(next);
+      const didWrite = writeSessionToUrl(next);
+      setIsUrlWriteLimited(!didWrite);
       return next;
     });
   }, []);
@@ -153,11 +163,12 @@ export const useUrlState = (): UseUrlStateResult => {
   return useMemo(
     () => ({
       state,
+      isUrlWriteLimited,
       setRoomId,
       setSeatData,
       setSeatValue,
       clearState,
     }),
-    [clearState, setRoomId, setSeatData, setSeatValue, state],
+    [clearState, isUrlWriteLimited, setRoomId, setSeatData, setSeatValue, state],
   );
 };
