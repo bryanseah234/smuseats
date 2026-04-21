@@ -11,7 +11,8 @@ A Vite + React + TypeScript SPA that lets SMU students **browse classroom floor 
 | `/` | Landing page — hero, how-it-works guide, building shortcut cards |
 | `/rooms` | Filterable room browser (Building → Floor → Type) with shareable query params |
 | `/room/:roomId` | Interactive seat map — click seats, zoom/pan, copy a shareable link |
-| `/edit` | Contributor seat editor — add/move/delete/renumber seats, export JSON |
+| `/edit` | Contributor seat editor — add/move/delete/renumber seats, export JSON download (enabled in dev, or with `VITE_ENABLE_EDITOR=true`) |
+| `/compare` | Visual comparison sandbox for image enhancement methods |
 
 - Seat selections are compressed into the URL via **lz-string** so links are self-contained
 - **registry.json** is the single source of truth for every room's image path, dimensions, and seat coordinates
@@ -45,6 +46,11 @@ src/
     registry.backup.json   # Backup copy of registry
 scripts/
   refine-seats.mjs         # Auto-refine seat positions (learns from manual edits)
+  detect-seats*.mjs        # Seat detection variants
+  extract-capacity.mjs     # OCR extraction of seating capacity
+  merge-seats.mjs          # Hybrid OCR + blob merge strategy
+  mask-*.mjs               # Image masking and preprocessing utilities
+  validate-registry.mjs    # Registry data shape validation
 public/
   maps/                    # Floor-plan PNGs (one per room)
 vercel.json                # SPA catch-all rewrite for Vercel deployment
@@ -68,6 +74,8 @@ Open the URL Vite prints in your terminal (usually `http://localhost:5173`).
 
 ```bash
 npm run lint      # ESLint check
+npm run validate:registry   # Registry shape checks
+npm run check     # lint + registry validation
 npm run build     # Production build → dist/
 npm run preview   # Serve the built output locally
 ```
@@ -96,15 +104,22 @@ The repo includes a `vercel.json` with a catch-all rewrite so all client-side ro
 
 ## Seat editor (`/edit`)
 
-The built-in editor at `/edit` lets contributors adjust seat positions visually:
+The built-in editor at `/edit` lets contributors adjust seat positions visually.
+In production builds it is route-gated by default; enable with `VITE_ENABLE_EDITOR=true`:
+
+```bash
+VITE_ENABLE_EDITOR=true npm run dev
+```
+
+Editor capabilities:
 
 - **Click** on the floor plan to place a new seat
 - **Drag** an existing seat to reposition it
-- **Right-click** or press **Delete/Backspace** to remove a seat
+- **Delete button** or **Delete/Backspace** to remove a selected seat
 - **Renumber** re-labels all seats sequentially
 - **Clear All** removes every seat in the room
 - **Undo** (Ctrl+Z) reverts the last action
-- **Export JSON** copies the seat array to clipboard — paste it into `registry.json`
+- **Export JSON** downloads a complete `registry.json` file snapshot
 
 ### Auto-refinement script
 
@@ -115,6 +130,25 @@ node scripts/refine-seats.mjs
 ```
 
 It uses connected-component detection on the floor-plan PNGs, applies a 50 px merge distance to eliminate clusters, and skips rooms that already match their expected capacity.
+
+### Script pipeline quick reference
+
+```bash
+# Generate PNGs from floorplan PDFs and sync registry dimensions
+npm run extract:pdf
+
+# Optional one-time conversion utility (preview by default; add --apply to write)
+npm run convert:coords -- --apply
+
+# Run seat detection
+npm run detect:seats
+
+# Refine detections with capacity-aware heuristics
+node scripts/refine-seats.mjs
+
+# Validate data shape before commit
+npm run validate:registry
+```
 
 ---
 
@@ -129,10 +163,12 @@ flowchart TD
   B --> D["/rooms RoomsPage"]
   B --> E["/room/:roomId RoomView"]
   B --> F["/edit EditSeats"]
+  B --> J["/compare Compare"]
   E --> G[RoomCanvas]
   G --> H[Seat]
   F --> I[SeatEditorCanvas]
-  C & D & E & F --> R[registry.json]
+  J --> K[Canvas processors]
+  C & D & E & F & J --> R[registry.json]
 ```
 
 ### Seat selection data flow
