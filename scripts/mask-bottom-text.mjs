@@ -7,8 +7,9 @@
  * Based on analysis: text sits at y=80-95%, x=0-65%.
  *
  * Usage:
- *   node scripts/mask-bottom-text.mjs          # process all PNGs
- *   node scripts/mask-bottom-text.mjs --dry    # preview without writing
+ *   node scripts/mask-bottom-text.mjs           # preview only (default dry-run)
+ *   node scripts/mask-bottom-text.mjs --apply   # process all PNGs and write
+ *   node scripts/mask-bottom-text.mjs --dry     # explicit preview mode
  */
 
 import fs from 'fs';
@@ -17,7 +18,8 @@ import { createCanvas, loadImage } from '@napi-rs/canvas';
 
 const ROOT = process.cwd();
 const MAPS_DIR = path.join(ROOT, 'public', 'maps');
-const DRY_RUN = process.argv.includes('--dry');
+const APPLY = process.argv.includes('--apply');
+const DRY_RUN = process.argv.includes('--dry') || !APPLY;
 
 // Region to mask: bottom 20% of height, left 70% of width
 const Y_START_RATIO = 0.80;
@@ -51,7 +53,10 @@ async function maskImage(filePath) {
 async function main() {
   const files = fs.readdirSync(MAPS_DIR).filter((f) => f.endsWith('.png'));
 
-  if (DRY_RUN) console.log('DRY RUN — no files will be modified.\n');
+  if (DRY_RUN) {
+    console.log('DRY RUN — no files will be modified.');
+    console.log('Use --apply to persist masked images.\n');
+  }
 
   let count = 0;
   for (const file of files) {

@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "validate:registry": "node scripts/validate-registry.mjs",
+    "check": "npm run lint && npm run validate:registry",
     "preview": "vite preview",
     "extract:pdf": "node scripts/extract-pdf-png.mjs",
     "seed:seats": "node scripts/seed-seats.mjs",
