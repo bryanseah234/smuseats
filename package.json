@@ -37,7 +37,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "pdf-to-png-converter": "^3.11.0",
-    "pdfjs-dist": "^5.5.207",
+    "pdfjs-dist": "^5.7.284",
     "png-to-ico": "^3.0.1",
     "postcss": "^8.5.12",
     "tailwindcss": "^4.2.4",
