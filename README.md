@@ -198,3 +198,7 @@ sequenceDiagram
 2. Run `npm run lint` before committing
 3. If adding or editing seat positions, use the `/edit` page and export the JSON
 4. Open a PR with a clear description of what changed
+
+## License
+
+Apache-2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
